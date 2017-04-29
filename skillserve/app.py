@@ -24,12 +24,15 @@ app.add_route('/', HelloRoute())
 
 
 class EnvRoute:
+    env = json.dumps(
+        dict(os.environ),
+        indent=2,
+        separators=(',', ': '),
+        sort_keys=True,
+    ).encode()
+
     def on_get(self, req, resp):
-        resp.data = json.dumps(
-            os.environ,
-            indent=2,
-            separators=(',', ': ')
-        ).encode()
+        resp.data = self.env
 
 
 app.add_route('/environ', EnvRoute())
