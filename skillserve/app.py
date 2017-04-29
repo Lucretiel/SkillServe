@@ -1,5 +1,6 @@
 import falcon
 import json
+import os
 
 from skillserve.resources import resources
 
@@ -20,3 +21,15 @@ class HelloRoute:
 
 
 app.add_route('/', HelloRoute())
+
+
+class EnvRoute:
+    def on_get(self, req, resp):
+        resp.data = json.dumps(
+            os.environ,
+            indent=2,
+            separators=(',', ': ')
+        ).encode()
+
+
+app.add_route('/environ', EnvRoute())
