@@ -1,0 +1,9 @@
+falcon==1.1.0
+gevent==1.2.1
+greenlet==0.4.12
+gunicorn==19.7.1
+numpy==1.12.1
+python-mimeparse==1.6.0
+scipy==0.19.0
+six==1.10.0
+trueskill==0.4.4
