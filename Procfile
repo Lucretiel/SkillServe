@@ -1,1 +1,1 @@
-web: gunicorn --worker-class gevent skillserve.app
+web: gunicorn --worker-class gevent skillserve.wsgi

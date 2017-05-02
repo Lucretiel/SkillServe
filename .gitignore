@@ -91,3 +91,6 @@ ENV/
 # Sublime stuff
 *.sublime-project
 *.sublime-workspace
+
+# django stuff
+db.sqlite3
