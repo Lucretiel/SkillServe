@@ -19,16 +19,25 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.dirname(PROJECT_ROOT)
 
 
+def convert_bool(value, default=False):
+    return value if isinstance(value, bool) else {
+        '': default,
+        'false': False, 'true': True,
+        'no': False, 'yes': True,
+        'off': False, 'on': True,
+    }[value.lower()]
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '-8idz@b=osbpt6n^3d%x*z1207u0@!+q8_+atlk@fl!(=b#_^q'
+SECRET_KEY = os.environ.get('SECRET_KEY', '-8idz@b=osbpt6n^3d%x*z1207u0@!+q8_+atlk@fl!(=b#_^q')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = convert_bool(os.environ.get('DEBUG', 'true'))
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split()
 
 
 # Application definition
