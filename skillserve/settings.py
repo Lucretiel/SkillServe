@@ -146,3 +146,8 @@ STATIC_URL = '/static/'
 # Extra places for collectstatic to find static files.
 STATICFILES_DIRS = (
 )
+
+CORS_ORIGIN_WHITELIST = [
+    'localhost',
+    '127.0.0.1',
+]
