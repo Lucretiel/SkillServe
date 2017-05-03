@@ -147,7 +147,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (
 )
 
-CORS_ORIGIN_WHITELIST = [
-    'localhost',
-    '127.0.0.1',
+CORS_ORIGIN_REGEX_WHITELIST = [
+    r'^localhost(:[0-9]+)?$',
+    r'^127.0.0.1(:[0-9]+)?$',
 ]
