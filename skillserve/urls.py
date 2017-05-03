@@ -13,11 +13,24 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
+
+from logging_tree import build_description
+
 from django.conf.urls import include
 from django.conf.urls import url
 from django.contrib import admin
 
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+
+@api_view()
+def log_tree(request):
+    return Response(build_description())
+
+
 urlpatterns = [
-    url(r'^', include('skillboards.urls')),
+    url(r'^api/', include('skillboards.urls')),
     url(r'^admin/', admin.site.urls),
+    url(r'^loggers$', log_tree)
 ]
