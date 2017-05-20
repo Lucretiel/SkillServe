@@ -5,6 +5,7 @@ from skillboards import models
 
 class PlayerSerializer(serializers.ModelSerializer):
     skill = serializers.FloatField(read_only=True)
+    is_provisional = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = models.Player
@@ -13,6 +14,7 @@ class PlayerSerializer(serializers.ModelSerializer):
             "username",
             "print_name",
             "skill",
+            "is_provisional",
 
             "mu",
             "sigma",
@@ -35,7 +37,9 @@ class BoardSerializer(serializers.ModelSerializer):
 
 class PlayerRegisterSerializer(serializers.Serializer):
     username = serializers.SlugField()
-    print_name = serializers.CharField(max_length=255, required=False, allow_null=True, default="")
+    print_name = serializers.CharField(
+        max_length=255, allow_null=True, default="", allow_blank=True
+    )
 
 
 class GameSerializer(serializers.Serializer):

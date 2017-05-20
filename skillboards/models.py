@@ -1,7 +1,9 @@
 import trueskill
 
 from django.db import models
+from django.db.models import Case
 from django.db.models import F
+from django.db.models import When
 
 # Create your models here.
 
@@ -29,6 +31,24 @@ class Board(models.Model):
         )
 
 
+class PlayerManager(models.Manager):
+    '''
+    Add some extra stuff to players, like skill and is_provisional
+    '''
+    _skill_expression = F('mu') - (F('sigma') * (F('board__mu') / F('board__sigma')))
+    _is_provisional_expression = Case(
+        When(sigma__gt=7.5, then=True),
+        default=False,
+        output_field=models.BooleanField(),
+    )
+
+    def get_queryset(self):
+        return super().get_queryset().annotate(
+            skill=self._skill_expression,
+            is_provisional=self._is_provisional_expression
+        )
+
+
 class Player(models.Model):
     username = models.SlugField(db_index=True)
     board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name="players")
@@ -38,12 +58,23 @@ class Player(models.Model):
     mu = models.FloatField()
     sigma = models.FloatField()
 
-    skill_expression = F('mu') - (F('sigma') * (F('board__mu') / F('board__sigma')))
+    objects = PlayerManager()
 
     class Meta:
         unique_together = index_together = [
             ('username', 'board'),
         ]
+        base_manager_name = default_manager_name = "objects"
+
+    @classmethod
+    def create(cls, *, username, print_name, board):
+        return cls(
+            username=username,
+            print_name=print_name,
+            board=board,
+            mu=board.mu,
+            sigma=board.sigma
+        )
 
     def __str__(self):
         return "{name}@{board}".format(

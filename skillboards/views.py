@@ -14,6 +14,11 @@ from skillboards.serializers import PlayerSerializer
 
 
 @api_view()
+def poke(request):
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view()
 def board_detail(request, board_name):
     board = get_object_or_404(Board, name=board_name)
     serializer = BoardSerializer(board)
@@ -26,10 +31,7 @@ def player_list(request, board_name):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     serializer = PlayerSerializer(
-        Player.objects
-        .filter(board=board_name)
-        .annotate(skill=Player.skill_expression)
-        .order_by('-skill'),
+        Player.objects.filter(board=board_name),
         many=True
     )
 
@@ -39,9 +41,7 @@ def player_list(request, board_name):
 @api_view()
 def player_detail(request, board_name, username):
     player = get_object_or_404(
-        Player.objects
-        .filter(username=username, board__name=board_name)
-        .annotate(skill=Player.skill_expression)
+        Player.objects.filter(username=username, board__name=board_name)
     )
 
     serializer = PlayerSerializer(player)
@@ -61,7 +61,7 @@ def register(request, board_name):
     board = get_object_or_404(Board.objects.only('mu', 'sigma'), name=board_name)
 
     try:
-        player = board.players.annotate(skill=Player.skill_expression).get(username=username)
+        player = board.players.get(username=username)
 
     except Player.DoesNotExist:
         # Player doesn't exist; create a new one
@@ -70,16 +70,16 @@ def register(request, board_name):
                 'print_name': "Player doesn't exist; must provide print_name"
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        player = Player(
+        player = Player.create(
             username=username,
             print_name=print_name,
-            board=board,
-            mu=board.mu,
-            sigma=board.sigma
+            board=board
         )
-        player.skill = 0  # New player skill is 0 by definition
         player.full_clean()
         player.save()
+
+        # Re-fetch to get annotation fields
+        player = Player.objects.get(username=username)
 
         code = status.HTTP_201_CREATED
 
@@ -123,9 +123,7 @@ def game(request, board_name):
 
     player_instances = {
         player.username: player for player in
-        board.players
-        .filter(username__in=player_teams.keys())
-        .annotate(skill=Player.skill_expression)
+        board.players.filter(username__in=player_teams.keys())
     }
 
     old_ratings = {name: player.skill for name, player in player_instances.items()}
