@@ -11,4 +11,5 @@ urlpatterns = [
         url(r'^game$', views.game),
         url(r'^register$', views.register),
     ])),
+    url(r'^poke', views.poke),
 ]
