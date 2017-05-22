@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'nested_inline',
     'rest_framework',
     'corsheaders',
 
