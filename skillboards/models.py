@@ -135,6 +135,7 @@ class GameTeamPlayer(models.Model):
     class Meta:
         unique_together = index_together = ('team', 'player')
 
+
 # Crokinole Specific
 class PartialGame(models.Model):
     SOLO = 1

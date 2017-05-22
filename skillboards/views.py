@@ -186,10 +186,14 @@ def game(request, board_name):
 
 
 class PartialGameView(APIView):
-    def get(self, request, board_name):
-        game = get_object_or_404(PartialGame, board=board_name)
+    @staticmethod
+    def serialized_game(game):
         serializer = PartialGameSerializer(game)
         return Response(data=serializer.data)
+
+    def get(self, request, board_name):
+        game = get_object_or_404(PartialGame, board=board_name)
+        return self.serialized_game(game)
 
     @transaction.atomic
     def post(self, request, board_name):
@@ -242,8 +246,7 @@ class PartialGameView(APIView):
                 gamePlayer.full_clean()
                 gamePlayer.save()
 
-            # TODO: response
-            return Response({})
+            return self.serialized_game(game)
         else:
             try:
                 game = board.partialgame
@@ -295,7 +298,7 @@ class PartialGameView(APIView):
                 game_teams = game.get_teams()
             except PartialGame.NonFullGame:
                 # TODO: response
-                return Response({})
+                return self.serialized_game(game)
 
             trueskill_env = board.trueskill_environ()
             results = calc.calculate_updated_rankings(game_teams, trueskill_env)
