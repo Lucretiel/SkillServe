@@ -192,8 +192,13 @@ class PartialGameView(APIView):
         return Response(data=serializer.data)
 
     def get(self, request, board_name):
-        game = get_object_or_404(PartialGame, board=board_name)
-        return self.serialized_game(game)
+        board = get_object_or_404(Board, name=board_name)
+        try:
+            game = PartialGame.objects.get(board=board)
+        except PartialGame.DoesNotExist:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return self.serialized_game(game)
 
     @transaction.atomic
     def post(self, request, board_name):
