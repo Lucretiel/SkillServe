@@ -81,9 +81,12 @@ class PartialGamePlayerSerializer(serializers.ModelSerializer):
 class PartialGameSerializer(serializers.ModelSerializer):
     players = serializers.ListField(
         child=PartialGamePlayerSerializer(),
-        source="player_info.all")
+        source="player_info.all",
+        read_only=True)
     game_type = serializers.SlugField(
         source="get_game_type_display")
+    fingerprint = serializers.IntegerField(
+        read_only=True)
 
     class Meta:
         model = models.PartialGame
@@ -91,6 +94,7 @@ class PartialGameSerializer(serializers.ModelSerializer):
             "game_type",
             "players",
             "id",
+            "fingerprint"
         ]
 
 

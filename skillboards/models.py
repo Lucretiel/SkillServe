@@ -179,6 +179,15 @@ class PartialGame(models.Model):
             for winner in (True, False)
         ]
 
+    def fingerprint(self):
+        return hash((
+            self.board.name,
+            self.get_game_type_display(),
+            frozenset(
+                (player.player.username, player.winner) for player in self.player_info.all()
+            )
+        ))
+
 
 class PartialGamePlayer(models.Model):
     game = models.ForeignKey(PartialGame, on_delete=models.CASCADE, related_name="player_info")

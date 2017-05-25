@@ -72,7 +72,7 @@ def register(request, board_name):
     board = get_object_or_404(Board.objects.only('mu', 'sigma'), name=board_name)
 
     try:
-        player = board.players.get(username=username)
+        player = board.players.with_player_info().get(username=username)
 
     except Player.DoesNotExist:
         # Player doesn't exist; create a new one
