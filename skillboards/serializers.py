@@ -53,17 +53,24 @@ class PlayerRegisterSerializer(serializers.Serializer):
 class GameSerializer(serializers.Serializer):
     class TeamSerializer(serializers.Serializer):
         class PlayerSerializer(serializers.Serializer):
-            username = serializers.SlugField()
-            weight = serializers.FloatField(min_value=0, max_value=1, default=1)
+            username = serializers.SlugField(source='player.username')
 
             def to_internal_value(self, data):
                 if isinstance(data, str):
                     data = {"username": data}
                 return super().to_internal_value(data)
 
-        players = serializers.ListField(child=PlayerSerializer(), min_length=1)
+        players = serializers.ListField(
+            child=PlayerSerializer(),
+            min_length=1,
+            source="players.all")
         rank = serializers.IntegerField(min_value=0)
-    teams = serializers.ListField(child=TeamSerializer(), min_length=2)
+    teams = serializers.ListField(
+        child=TeamSerializer(),
+        min_length=2,
+        source="teams.all"
+    )
+    time = serializers.DateTimeField()
 
 
 class PartialGamePlayerSerializer(serializers.ModelSerializer):

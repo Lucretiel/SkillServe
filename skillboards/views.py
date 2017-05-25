@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 
 from skillboards import calculations as calc
 from skillboards.models import Board
+from skillboards.models import GameTeamPlayer
 from skillboards.models import PartialGame
 from skillboards.models import PartialGamePlayer
 from skillboards.models import Player
@@ -51,12 +52,32 @@ def player_list(request, board_name):
 def player_detail(request, board_name, username):
     player = get_object_or_404(
         Player.objects
-        .filter(username=username, board__name=board_name)
+        .filter(username=username, board=board_name)
         .with_player_info()
     )
 
     serializer = PlayerSerializer(player)
     return Response(serializer.data)
+
+
+@api_view()
+def player_recent_game(request, board_name, username):
+    player = get_object_or_404(
+        Player.objects
+        .filter(username=username, board=board_name))
+
+    try:
+        game = (
+            GameTeamPlayer.objects
+            .filter(player=player)
+            .latest('team__game__time')
+            .team.game
+        )
+    except GameTeamPlayer.DoesNotExist:
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    else:
+        serializer = GameSerializer(game)
+        return Response(serializer.data)
 
 
 @api_view(["POST"])
@@ -105,84 +126,6 @@ def register(request, board_name):
 
     player_serializer = PlayerSerializer(player)
     return Response(player_serializer.data, status=code)
-
-
-@api_view(["POST"])
-@transaction.atomic
-def game(request, board_name):
-    game_serializer = GameSerializer(data=request.data)
-    if not game_serializer.is_valid():
-        return Response(game_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    teams = game_serializer.data['teams']
-
-    # Normally I would do a comprehension, but we have to check for duplicates
-    player_teams = {}
-
-    for team_index, team in enumerate(teams):
-        for player in team['players']:
-            player_name = player['username']
-            old_index = player_teams.setdefault(player_name, team_index)
-            if old_index != team_index:
-                return Response({
-                    "error": "a player is on multiple teams",
-                    "player": player_name,
-                    "teams": [old_index, team_index]
-                }, status=status.HTTP_400_BAD_REQUEST)
-
-    board = get_object_or_404(Board, name=board_name)
-
-    player_instances = {
-        player.username: player for player in
-        board.players.filter(username__in=player_teams.keys())
-    }
-
-    old_ratings = {name: player.skill for name, player in player_instances.items()}
-
-    missing_players = player_teams.keys() - player_instances.keys()
-    if missing_players:
-        return Response({
-            "error": "1 or more players don't exist",
-            "players": list(missing_players)
-        }, status=status.HTTP_400_BAD_REQUEST)
-
-    trueskill_env = board.trueskill_environ()
-
-    teams_to_evaluate = [
-        {player['username']: player_instances[player['username']].rating
-         for player in team['players']}
-        for team in teams
-    ]
-
-    ranks_to_evaluate = [
-        team['rank'] for team in teams
-    ]
-
-    weights_to_evaluate = {
-        (team_index, player['username']): player['weight']
-        for team_index, team in enumerate(teams)
-        for player in team['players']
-    }
-
-    results = trueskill_env.rate(
-        teams_to_evaluate,
-        ranks_to_evaluate,
-        weights_to_evaluate
-    )
-
-    new_ratings = {}
-
-    # TODO: is there a better way to do this than a loop in Python?
-    for player_name, instance in player_instances.items():
-        rating = results[player_teams[player_name]][player_name]
-        instance.rating = rating
-        instance.save()
-        new_ratings[player_name] = trueskill_env.expose(rating)
-
-    return Response({
-        "new_ratings": new_ratings,
-        "old_ratings": old_ratings,
-    })
 
 
 class PartialGameView(APIView):
