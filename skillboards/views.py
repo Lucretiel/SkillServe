@@ -37,13 +37,23 @@ def board_detail(request, board_name):
 
 @api_view()
 def player_list(request, board_name):
-    if not Board.objects.filter(name=board_name).exists():
-        return Response(status=status.HTTP_404_NOT_FOUND)
+    board = get_object_or_404(Board, name=board_name)
+    request_user = request.GET.get('as', None)
+    players = Player.objects.filter(board=board_name).with_player_info()
 
-    serializer = PlayerSerializer(
-        Player.objects.filter(board=board_name).with_player_info(),
-        many=True
-    )
+    if request_user is not None:
+        players = list(players)
+        trueskill_env = board.trueskill_environ()
+
+        for player in players:
+            if player.username == request_user:
+                self_rating = player.rating
+                break
+
+        for player in players:
+            player.quality = trueskill_env.quality_1vs1(player.rating, self_rating)
+
+    serializer = PlayerSerializer(players, many=True)
 
     return Response(serializer.data)
 

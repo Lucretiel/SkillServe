@@ -3,7 +3,6 @@ import trueskill
 from django.db import models
 from django.db import transaction
 from django.db.models import Case
-from django.db.models import Count
 from django.db.models import F
 from django.db.models import When
 

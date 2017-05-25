@@ -7,6 +7,10 @@ class PlayerSerializer(serializers.ModelSerializer):
     skill = serializers.FloatField(read_only=True)
     upper_skill = serializers.FloatField(read_only=True)
     is_provisional = serializers.BooleanField(read_only=True)
+    quality = serializers.FloatField(
+        read_only=True,
+        required=False
+    )
 
     class Meta:
         model = models.Player
@@ -24,6 +28,8 @@ class PlayerSerializer(serializers.ModelSerializer):
             "games",
             "wins",
             "losses",
+
+            "quality",
         ]
 
 
