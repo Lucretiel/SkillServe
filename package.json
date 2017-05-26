@@ -1,6 +1,9 @@
 {
   "name": "beach-week-crokinole",
   "version": "1.0.0",
+  "engines": {
+    "node": "7.x"
+  },
   "description": "A TrueSkill-based leaderboard for our Beach Week Crokinole games",
   "main": "index.js",
   "scripts": {
