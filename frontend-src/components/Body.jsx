@@ -108,7 +108,7 @@ class Body extends React.PureComponent {
 							The gist of it is this: each player's rating is measured in skill
 							({mu}) and uncertainty ({sigma}). The difference between two
 							players' {mu} indicates how likely it is that the higher-rated
-							player will win; for instance, a difference of 4 indicates a ~75%
+							player will win; for instance, a difference of 80 indicates a ~75%
 							chance that the higher-rated player will win.</p>
 							<p>Because the ratings are only estimates, the value displayed on the
 							leaderboard is not your actual {mu} value, but a computed value
@@ -123,7 +123,7 @@ class Body extends React.PureComponent {
 							over the course of the week, as the {sigma} values drop across the
 							board.</p>
 							<p>You can read more about Trueskill <a target="_blank"
-							href="https://www.microsoft.com/en-us/research/project/trueskill-ranking-system/">
+							href="http://www.moserware.com/2010/03/computing-your-skill.html">
 							here</a> and <a href="http://trueskill.org/" target="_blank">here</a>.</p>
 							<p>The underlying trueskill engine is configured using all the defaults
 							recommended by Microsoft, except that the draw probability is 0%,
