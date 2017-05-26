@@ -9,10 +9,10 @@ urlpatterns = [
         url(r'^players/', include([
             url(r'^$', views.player_list),
             url(r'^(?P<username>[a-zA-Z0-9_-]+)$', views.player_detail),
-            url(r'^(?P<username>[a-zA-Z0-9_-]+)/recent_game', views.player_recent_game),
+            url(r'^(?P<username>[a-zA-Z0-9_-]+)/recent_game$', views.player_recent_game),
         ])),
         url(r'^register$', views.register),
         url(r'^partial_game$', views.PartialGameView.as_view())
     ])),
-    url(r'^poke', views.poke),
+    url(r'^poke$', views.poke),
 ]
