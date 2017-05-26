@@ -966,8 +966,8 @@ caniuse-db@^1.0.30000529, caniuse-db@^1.0.30000634, caniuse-db@^1.0.30000639:
   resolved "https://registry.yarnpkg.com/caniuse-db/-/caniuse-db-1.0.30000672.tgz#f40f4bf126cb7e063f6a2e1df1c955c803d12265"
 
 caniuse-lite@^1.0.30000670:
-  version "1.0.30000671"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30000671.tgz#c206c2f1a1feb34de46064407c4356818389bf1e"
+  version "1.0.30000672"
+  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30000672.tgz#3f89b9907db78653f88bc4d056ed626e8ec74357"
 
 caseless@~0.12.0:
   version "0.12.0"
