@@ -1,11 +1,13 @@
-import datetime
 import trueskill
 
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db import transaction
 from django.db.models import Case
 from django.db.models import F
+from django.db.models import Q
 from django.db.models import When
+from django.utils import timezone
 
 from skillboards import calculations as calc
 
@@ -32,11 +34,14 @@ class Board(models.Model):
             backend='scipy'
         )
 
-    def is_locked(self, when=None):
-        if when is None:
-            when = datetime.datetime.now()
+    def unlock_time(self, now=None):
+        if now is None:
+            now = timezone.now()
 
-        return self.locks.filter(start__lt=when, end__gt=when).exists()
+        try:
+            return self.locks.filter(start__lte=now, end__gt=now).get().end
+        except BoardLock.DoesNotExist:
+            return None
 
     @property
     def partial_game_id(self):
@@ -52,6 +57,24 @@ class BoardLock(models.Model):
 
     start = models.DateTimeField(db_index=True)
     end = models.DateTimeField(db_index=True)
+
+    def clean(self):
+        super().clean()
+
+        start = self.start
+        end = self.end
+
+        if start >= end:
+            raise ValidationError({'end': "End must come after start"})
+
+        neighbors = BoardLock.objects.filter(board=self.board).exclude(pk=self.pk)
+
+        if neighbors.filter(
+            Q(start__lte=start, end__gte=start) |
+            Q(start__lte=end, end__gte=end) |
+            Q(start__gte=start, end__lte=end)
+        ).exists():
+            raise ValidationError('Locks must not overlap other locks')
 
 
 class PlayerQuerySet(models.QuerySet):

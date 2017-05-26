@@ -5,9 +5,14 @@ from skillboards import models
 
 
 # Core models
+class LockInline(admin.TabularInline):
+    model = models.BoardLock
+    extra = 0
+
+
 @admin.register(models.Board)
 class BoardAdmin(admin.ModelAdmin):
-    pass
+    inlines = [ LockInline ]
 
 
 @admin.register(models.Player)
