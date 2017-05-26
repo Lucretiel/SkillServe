@@ -1,7 +1,8 @@
 .PHONY: all bundle zopfli brotli clean mod-clean clean-all
 
 SRC_FILES = $(shell find frontend-src -type f)
-WEBPACK = $(shell which webpack)
+WEBPACK_DIR = $(shell npm bin)
+WEBPACK = $(shell npm bin)/webpack
 BROTLI = $(shell which bro brotli)
 ZOPFLI = $(shell which zopfli)
 OUTPUT_DIR = ./frontend-dist
@@ -15,6 +16,7 @@ $(OUTPUT_DIR)/bundle.js: $(SRC_FILES) \
 	webpack.config.js \
 	node_modules
 
+	ls $(WEBPACK_DIR)
 	env NODE_ENV=production $(WEBPACK) -p
 
 $(OUTPUT_DIR)/bundle.js.br: $(OUTPUT_DIR)/bundle.js
