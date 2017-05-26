@@ -258,7 +258,7 @@ class Game extends React.PureComponent {
 
 
 		const date_pattern = (
-			distance_days < 7 ? `[on] dddd` :
+			distance_days < 7 ? "[on] dddd [at] h:mm A" :
 			now.getFullYear() != date.getFullYear() ? '[on] MMM D, YYYY' :
 			now.getMonth() != date.getMonth() ? '[on] MMM Do' :
 			now.getDay() != date.getDay() ? `[in ${distance_days.toFixed(0)} days]` :
