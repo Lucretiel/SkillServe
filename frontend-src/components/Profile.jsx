@@ -28,6 +28,22 @@ class StatBlock extends React.PureComponent {
 	}
 }
 
+const tiers = {
+	tier1: 7.988,
+	tier2: 12.892,
+	tier3: 17.108,
+	tier4: 22.012,
+	tier5: 50,
+}
+
+const tierWidths = {
+	tier1: tiers.tier1,
+	tier2: tiers.tier2 - tiers.tier1,
+	tier3: tiers.tier3 - tiers.tier2,
+	tier4: tiers.tier4 - tiers.tier3,
+	tier5: tiers.tier5 - tiers.tier4,
+}
+
 class SkillBar extends React.PureComponent {
 	static propTypes = {
 		skill: PropTypes.number.isRequired
@@ -53,36 +69,45 @@ class SkillBar extends React.PureComponent {
 
 	render() {
 		const skill = this.props.skill
+		const t = tiers
+		const w = tierWidths
 
 		const progressClass = classNames("progress-bar", "mr-2", {
-			'bg-danger': skill < 6,
-			'bg-warning': 6 <= skill && skill < 14,
-			'bg-success': 14 <= skill && skill < 24,
-			'bg-info': 24 <= skill && skill < 36,
+			'bronze-bg': skill < t.tier1,
+			'silver-bg': t.tier1 <= skill && skill < t.tier2,
+			'gold-bg': t.tier2 <= skill && skill < t.tier3,
+			'platinum-bg': t.tier3 <= skill && skill < t.tier4,
+			'diamond-bg': t.tier4 <= skill
 		})
 
 		const progressWidth = 100 * (
 			skill < 0 ? 0 :
-			skill < 6 ? skill / 6 :
-			skill < 14 ? (skill - 6) / 8 :
-			skill < 24 ? (skill - 14) / 10 :
-			skill < 36 ? (skill - 24) / 12 :
-			skill < 50 ? (skill - 36) / 14 :
+			skill < t.tier1 ? skill / w.tier1 :
+			skill < t.tier2 ? (skill - t.tier1) / w.tier2 :
+			skill < t.tier3 ? (skill - t.tier2) / w.tier3 :
+			skill < t.tier4 ? (skill - t.tier3) / w.tier4 :
+			skill < t.tier5 ? (skill - t.tier4) / w.tier5 :
 			1
 		)
 
 		const progressTarget =
-			skill < 6 ? 6 :
-			skill < 14 ? 14 :
-			skill < 24 ? 24 :
-			skill < 36 ? 36 :
-			skill < 50 ? 50 :
-			100
+			skill < t.tier1 ? t.tier1 :
+			skill < t.tier2 ? t.tier2 :
+			skill < t.tier3 ? t.tier3 :
+			skill < t.tier4 ? t.tier4 :
+			tier5
 
 		const progressStyle = {width: `${progressWidth}%`}
 
+		const tierName =
+			skill < t.tier1 ? 'Bronze' :
+			skill < t.tier2 ? 'Silver' :
+			skill < t.tier3 ? 'Gold' :
+			skill < t.tier4 ? 'Platinum' :
+			'Diamond'
+
 		const progressFraction = this.state.valueHidden ? null :
-			`${formatSkill({skill})} / ${formatSkill({skill: progressTarget})}`
+			`${formatSkill({skill})} / ${formatSkill({skill: progressTarget})} | ${tierName} tier`
 
 		return <div className="progress">
 			<div className={progressClass} style={progressStyle}>

@@ -1,11 +1,31 @@
 .btn-group-justified {
-  display: flex;
-  width: 100%;
-  .btn,
-  .btn-group {
-    flex: 1;
-    .btn {
-      width: 100%;
-    }
-  }
+	display: flex;
+	width: 100%;
+	.btn,
+	.btn-group {
+		flex: 1;
+		.btn {
+			width: 100%;
+		}
+	}
+}
+
+.diamond-bg {
+	background-color: #00FFFF
+}
+
+.platinum-bg {
+	background-color: #E5E4E2
+}
+
+.gold-bg {
+	background-color: #D4AF37
+}
+
+.silver-bg {
+	background-color: #C0C0C0
+}
+
+.bronze-bg {
+	background-color: #CD7F32
 }
