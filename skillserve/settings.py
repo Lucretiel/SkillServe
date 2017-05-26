@@ -146,6 +146,8 @@ USE_L10N = True
 USE_TZ = True
 
 SECURE_SSL_REDIRECT = environ_get_bool('REDIRECT_SSL', default=False)
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
 
 
 # Static files (CSS, JavaScript, Images)
