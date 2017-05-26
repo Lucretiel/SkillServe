@@ -6,6 +6,7 @@ import { takeLatest, put, select, all } from "redux-saga/effects"
 import { push as pushLocation } from "router/actions.jsx"
 import { fromPayload, createMaybeSelector, apiPost, apiFetch } from "store/util.jsx"
 import { refreshLeaderboard } from "store/leaderboard.jsx"
+import { refreshLock } from 'store/board_lock.jsx'
 
 const sym = value => `@@auth/${value}`
 
@@ -153,6 +154,7 @@ const loginSaga = function*({username, prettyName, leaderboard}) {
 			leaderboard: leaderboard
 		}))
 		yield put(refreshLeaderboard(leaderboard))
+		yield put(refreshLock(leaderboard))
 		yield put(pushLocation("/main"))
 	}
 }

@@ -18,6 +18,7 @@ import redirectSaga from "store/redirect.jsx"
 import { masterLeaderboardSaga, leaderboardReducer } from "store/leaderboard.jsx"
 import { masterPartialGameSaga, partialGameReducer } from "store/partial_game.jsx"
 import { recentGameMasterSaga, recentGameReducer} from "store/recent_game.jsx"
+import { refreshLockSaga, lockReducer } from "store/board_lock.jsx"
 
 import { reducer as routerReducer, createMiddleware as createRouterMiddleware } from "router"
 
@@ -49,6 +50,7 @@ const store = createStore(
 		leaderboard: leaderboardReducer,
 		partial_game: partialGameReducer,
 		recent_game: recentGameReducer,
+		board_lock: lockReducer,
 	}),
 	composeWithDevTools(
 		customApplyMiddleware(
@@ -68,6 +70,7 @@ persistStore(store, {
 		yield fork(masterAuthSaga)
 		yield fork(masterPartialGameSaga)
 		yield fork(recentGameMasterSaga)
+		yield fork(refreshLockSaga)
 	})
 	routerMiddleware.init()
 

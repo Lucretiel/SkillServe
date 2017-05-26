@@ -3,8 +3,10 @@ import {connect} from 'react-redux'
 import PropTypes from 'prop-types'
 import {map, find, join, filter, defaultTo, head} from 'lodash'
 import classNames from 'classnames'
+import dateFmt from 'date-fns/format'
 import {selectLeaderboard, selectUsername} from 'store/register.jsx'
 import { selectPlayersByName } from "store/leaderboard.jsx"
+import { selectUnlockTime, selectIsLocked, refreshLock } from 'store/board_lock.jsx'
 
 import { playerShape as boardPlayerShape } from "components/Leaderboard.jsx"
 
@@ -153,8 +155,12 @@ class Toggle extends React.PureComponent {
 		losers: selectPartialLosers(state),
 		partialGamePlayers: selectPartialGamePlayers(state),
 		playerList: selectPlayersByName(state),
+		unlockTime: selectUnlockTime(state),
 	}),
-	dispatch => ({submitPartialGame: data => dispatch(submitPartialGame(data))})
+	dispatch => ({
+		submitPartialGame: data => dispatch(submitPartialGame(data)),
+		refreshLock: leaderboard => dispatch(refreshLock(leaderboard))
+	})
 )
 class Game extends React.PureComponent {
 	static propTypes = {
@@ -168,7 +174,8 @@ class Game extends React.PureComponent {
 		partialGamePlayers: playerListProp,
 		playerList: PropTypes.objectOf(
 			boardPlayerShape.isRequired
-		).isRequired
+		).isRequired,
+		unlockTime: PropTypes.string
 	}
 
 	state = {
@@ -235,7 +242,33 @@ class Game extends React.PureComponent {
 	handleTypeChange = value => this.isTypeLocked() ? null :
 		this.setState({gameType: value})
 
-	submit = () => !this.isUserSubmitted() ?
+	isBoardLocked = () => this.props.unlockTime !== null
+
+	formattedUnlockTime = () => {
+		const date = new Date(this.props.unlockTime)
+		const now = new Date()
+
+		const distance = date - now
+		const distance_days = (distance /
+			1000 / //ms -> s
+			60 /   //s -> m
+			60 /   //m -> h
+			24   //h -> d
+		)
+
+
+		const date_pattern = (
+			distance_days < 7 ? `[on] dddd` :
+			now.getFullYear() != date.getFullYear() ? '[on] MMM D, YYYY' :
+			now.getMonth() != date.getMonth() ? '[on] MMM Do' :
+			now.getDay() != date.getDay() ? `[in ${distance_days.toFixed(0)} days]` :
+			'[at] h:mm A'
+		)
+
+		return dateFmt(date, date_pattern)
+	}
+
+	submit = () => !(this.isUserSubmitted() || this.isBoardLocked()) ?
 		this.props.submitPartialGame({
 			leaderboard: this.props.leaderboard,
 			username: this.props.currentUser,
@@ -245,12 +278,30 @@ class Game extends React.PureComponent {
 		}) :
 		null
 
+	refreshLock = () => this.props.refreshLock(this.props.leaderboard)
+
+	componentDidMount() {
+		this.refreshLock()
+	}
+
 	render() {
 		const winner = this.getWinner()
 		const gameType = this.getGameType()
 		const winText = gameType === "solo" ? "I won" : "We won"
 		const loseText = gameType === "solo" ? "I lost" : "We lost"
 		const submitClass = classNames("btn", "btn-primary", "btn-block")
+
+		const boardLocked = this.isBoardLocked()
+		const winnerLocked = this.isWinnerLocked()
+		const typeLocked = this.isTypeLocked()
+		const userSubmitted = this.isUserSubmitted()
+
+		const buttonText = (
+			boardLocked ? `Board unlocks ${this.formattedUnlockTime()}` :
+			userSubmitted ? "Waiting for other players" :
+			"Submit Game"
+		)
+
 
 		return <div className="container-fluid px-0">
 			<div className="row">
@@ -261,7 +312,7 @@ class Game extends React.PureComponent {
 							{activeClass: "btn-info", text: "Solo Game", id: "solo"},
 							{activeClass: "btn-info", text: "Team Game", id: "team"},
 						]}
-						locked={this.isTypeLocked() || this.isUserSubmitted()}
+						locked={boardLocked || typeLocked || userSubmitted}
 						onChange={this.handleTypeChange}
 					/>
 				</div>
@@ -273,16 +324,16 @@ class Game extends React.PureComponent {
 							{activeClass: "btn-danger", text: loseText, id: "lose"},
 						]}
 						btnClass="btn-lg"
-						locked={this.isWinnerLocked() || this.isUserSubmitted()}
+						locked={boardLocked || winnerLocked || userSubmitted}
 						onChange={this.handleWinChange}
 					/>
 				</div>
 				<div className="col-md pt-2">
 					<button
 						type="button" className={"btn btn-primary btn-block"}
-						onClick={this.submit} disabled={this.isUserSubmitted()}
+						onClick={this.submit} disabled={userSubmitted || boardLocked}
 					>
-						{this.isUserSubmitted() ? "Waiting for other players" : "Submit Game"}
+						{buttonText}
 					</button>
 				</div>
 			</div>
