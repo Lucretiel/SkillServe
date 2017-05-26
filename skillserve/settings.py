@@ -149,8 +149,8 @@ WEBPACK_OUTPUT_DIR = os.environ.get(
     os.path.join(BASE_DIR, 'frontend-dist'))
 
 # Extra places for collectstatic to find static files.
-STATICFILES_DIRS = (
+STATICFILES_DIRS = [
     WEBPACK_OUTPUT_DIR
-)
+]
 
 CORS_ORIGIN_ALLOW_ALL = True
