@@ -25,8 +25,8 @@ $(OUTPUT_DIR)/bundle.js.br: $(OUTPUT_DIR)/bundle.js
 $(OUTPUT_DIR)/bundle.js.gz: $(OUTPUT_DIR)/bundle.js
 	$(ZOPFLI) $(OUTPUT_DIR)/bundle.js
 
-node_modules: yarn.lock package.json
-	yarn install
+node_modules: package.json
+	npm install
 	touch -ma node_modules
 
 clean-all: clean mod-clean
