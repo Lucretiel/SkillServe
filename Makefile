@@ -1,8 +1,7 @@
 .PHONY: all bundle zopfli brotli clean mod-clean clean-all
 
 SRC_FILES = $(shell find frontend-src -type f)
-WEBPACK_DIR = $(shell dirname $(npm bin))
-WEBPACK = $(shell npm bin)/webpack
+WEBPACK = $(shell which webpack)
 BROTLI = $(shell which bro brotli)
 ZOPFLI = $(shell which zopfli)
 OUTPUT_DIR = ./frontend-dist
@@ -16,8 +15,7 @@ $(OUTPUT_DIR)/bundle.js: $(SRC_FILES) \
 	webpack.config.js \
 	node_modules
 
-	env | sort
-	env NODE_ENV=production webpack -p
+	env NODE_ENV=production $(WEBPACK) -p
 
 $(OUTPUT_DIR)/bundle.js.br: $(OUTPUT_DIR)/bundle.js
 	$(BROTLI) < $(OUTPUT_DIR)/bundle.js > $(OUTPUT_DIR)/bundle.js.br
@@ -25,8 +23,8 @@ $(OUTPUT_DIR)/bundle.js.br: $(OUTPUT_DIR)/bundle.js
 $(OUTPUT_DIR)/bundle.js.gz: $(OUTPUT_DIR)/bundle.js
 	$(ZOPFLI) $(OUTPUT_DIR)/bundle.js
 
-node_modules: package.json
-	npm install
+node_modules: package.json yarn.lock
+	yarn install
 	touch -ma node_modules
 
 clean-all: clean mod-clean
