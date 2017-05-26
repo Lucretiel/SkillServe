@@ -20,13 +20,13 @@ $(BUNDLEJS): $(SRC_FILES) \
 	webpack.config.js \
 	node_modules
 
-	env NODE_ENV=production $(WEBPACK) -p --progress --output-path $(OUTPUT_DIR)
+	env NODE_ENV=production $(WEBPACK) -p --progress --output-path $(WEBPACK_OUTPUT_DIR)
 
 $(BUNDLEBR): $(BUNDLEJS)
-	$(BROTLI) < $(OUTPUT_DIR)/bundle.js > $(OUTPUT_DIR)/bundle.js.br
+	$(BROTLI) < $(BUNDLEJS) > $(BUNDLEBR)
 
 $(BUNDLEGZ): $(BUNDLEJS)
-	$(ZOPFLI) $(OUTPUT_DIR)/bundle.js
+	$(ZOPFLI) $(BUNDLEJS) -c > $(BUNDLEGZ)
 
 node_modules: package.json yarn.lock
 	yarn install
