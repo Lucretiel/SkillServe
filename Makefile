@@ -1,26 +1,31 @@
 .PHONY: all bundle zopfli brotli clean mod-clean clean-all
 
+WEBPACK_OUTPUT_DIR ?= $(PWD)/frontend-dist
+
+BUNDLEJS = $(WEBPACK_OUTPUT_DIR)/bundle.js
+BUNDLEBR = $(BUNDLEJS).br
+BUNDLEGZ = $(BUNDLEJS).gz
+
 SRC_FILES = $(shell find frontend-src -type f)
 WEBPACK = $(shell npm bin)/webpack
 BROTLI = $(shell which bro brotli)
 ZOPFLI = $(shell which zopfli)
-OUTPUT_DIR = ./frontend-dist
 
 all: bundle brotli zopfli
-bundle: $(OUTPUT_DIR)/bundle.js
-zopfli: $(OUTPUT_DIR)/bundle.js.br
-brotli: $(OUTPUT_DIR)/bundle.js.gz
+bundle: $(BUNDLEJS)
+zopfli: $(BUNDLEGZ)
+brotli: $(BUNDLEBR)
 
-$(OUTPUT_DIR)/bundle.js: $(SRC_FILES) \
+$(BUNDLEJS): $(SRC_FILES) \
 	webpack.config.js \
 	node_modules
 
-	env NODE_ENV=production $(WEBPACK) --progress -p
+	env NODE_ENV=production $(WEBPACK) -p --progress --output-path $(OUTPUT_DIR)
 
-$(OUTPUT_DIR)/bundle.js.br: $(OUTPUT_DIR)/bundle.js
+$(BUNDLEBR): $(BUNDLEJS)
 	$(BROTLI) < $(OUTPUT_DIR)/bundle.js > $(OUTPUT_DIR)/bundle.js.br
 
-$(OUTPUT_DIR)/bundle.js.gz: $(OUTPUT_DIR)/bundle.js
+$(BUNDLEGZ): $(BUNDLEJS)
 	$(ZOPFLI) $(OUTPUT_DIR)/bundle.js
 
 node_modules: package.json yarn.lock
@@ -30,7 +35,7 @@ node_modules: package.json yarn.lock
 clean-all: clean mod-clean
 
 clean:
-	rm -rf $(OUTPUT_DIR)
+	rm -rf $(WEBPACK_OUTPUT_DIR)
 
 mod-clean:
 	rm -rf node_modules
