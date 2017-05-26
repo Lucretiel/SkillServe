@@ -1,7 +1,7 @@
 .PHONY: all bundle zopfli brotli clean mod-clean clean-all
 
 SRC_FILES = $(shell find frontend-src -type f)
-WEBPACK_DIR = $(shell npm bin)
+WEBPACK_DIR = $(shell dirname $(npm bin))
 WEBPACK = $(shell npm bin)/webpack
 BROTLI = $(shell which bro brotli)
 ZOPFLI = $(shell which zopfli)
