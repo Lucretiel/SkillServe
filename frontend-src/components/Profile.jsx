@@ -4,6 +4,7 @@ import PropTypes from "prop-types"
 import classNames from "classnames"
 import format from 'date-fns/format'
 import {keyBy, debounce} from "lodash"
+import {Motion} from 'react-motion'
 
 import {skillSpring} from 'components/util.jsx'
 import {formatSkill} from 'util.jsx'
@@ -199,7 +200,9 @@ class Profile extends React.PureComponent {
 		return <div className="container-fluid pt-2 px-0">
 			<div className="row pb-2">
 				<div className="col">
-					<SkillBar skill={skill} />
+					<Motion defaultStyle={{skill: 0}} style={{skill: skillSpring(skill)}}>
+						{({skill}) => <SkillBar skill={skill} />}
+					</Motion>
 				</div>
 			</div>
 			<div className="row">

@@ -104,7 +104,7 @@ export const masterLeaderboardSaga = function*() {
 	const leaderboard = yield select(selectAuthLeaderboard)
 
 	if(leaderboard) {
-		yield* doRefreshLeaderboard(leaderboard)
+		yield* doRefreshLeaderboard({leaderboard})
 	}
 }
 

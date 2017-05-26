@@ -82,62 +82,58 @@ class Body extends React.PureComponent {
 			{path: '/main/profile', label: 'Profile'},
 			{path: '/main/about', label: 'About'},
 		]
-		const {currentPath, prettyName} = this.props
+		const {currentPath, prettyName, skill} = this.props
 
 		return (
-			<Motion defaultStyle={{skill: 0}} style={{skill: skillSpring(this.props.skill)}}>
-				{({skill}) =>
-					<div>
-						<div className="row">
-							<div className="col">
-								<RouterNav pages={pages} currentPath={currentPath} prettyName={prettyName} skill={skill}/>
-							</div>
-						</div>
-						<Fragment forRoute='/main/game'>
-							<Game />
-						</Fragment>
-						<Fragment forRoute='/main/leaderboard'>
-							<Leaderboard/>
-						</Fragment>
-						<Fragment forRoute='/main/profile'>
-							<Profile signOut={this.props.signOut} skill={skill}/>
-						</Fragment>
-						<Fragment forRoute='/main/about'>
-							<div className="row">
-								<div className="col text-justify">
-									<p>This crokinole ladder is based on Microsoft's Trueskill
-									matchmaking system, which was originally developed for Xbox Live.
-									The gist of it is this: each player's rating is measured in skill
-									({mu}) and uncertainty ({sigma}). The difference between two
-									players' {mu} indicates how likely it is that the higher-rated
-									player will win; for instance, a difference of 4 indicates a ~75%
-									chance that the higher-rated player will win.</p>
-									<p>Because the ratings are only estimates, the value displayed on the
-									leaderboard is not your actual {mu} value, but a computed value
-									that takes into account both your {mu} and {sigma}. Specifically, it
-									is <i>{mu} - 3{sigma}</i>, which is the lower 99.8th percentile. In other
-									words, the displayed skill means "the system 99.8% certain that your
-									skill is at least this value."</p>
-									<p>Note that this means it is possible for you to lose a game but
-									still see your skill go up; this can happen because your {mu} went
-									down, but your {sigma} went down even more, so your 99.8th
-									percentile went up. On average, everyone's skills will increase
-									over the course of the week, as the {sigma} values drop across the
-									board.</p>
-									<p>You can read more about Trueskill <a target="_blank"
-									href="https://www.microsoft.com/en-us/research/project/trueskill-ranking-system/">
-									here</a> and <a href="http://trueskill.org/" target="_blank">here</a>.</p>
-									<p>The underlying trueskill engine is configured using all the defaults
-									recommended by Microsoft, except that the draw probability is 0%,
-									because there are no draws in Crokinole.</p>
-									<p>Everything you see here was custom made by Nathan for beach week.
-									Lavish him with praise and feedback but mostly praise.</p>
-								</div>
-							</div>
-						</Fragment>
+			<div>
+				<div className="row">
+					<div className="col">
+						<RouterNav pages={pages} currentPath={currentPath} prettyName={prettyName} skill={skill}/>
 					</div>
-				}
-			</Motion>
+				</div>
+				<Fragment forRoute='/main/game'>
+					<Game />
+				</Fragment>
+				<Fragment forRoute='/main/leaderboard'>
+					<Leaderboard/>
+				</Fragment>
+				<Fragment forRoute='/main/profile'>
+					<Profile signOut={this.props.signOut} skill={skill}/>
+				</Fragment>
+				<Fragment forRoute='/main/about'>
+					<div className="row">
+						<div className="col text-justify">
+							<p>This crokinole ladder is based on Microsoft's Trueskill
+							matchmaking system, which was originally developed for Xbox Live.
+							The gist of it is this: each player's rating is measured in skill
+							({mu}) and uncertainty ({sigma}). The difference between two
+							players' {mu} indicates how likely it is that the higher-rated
+							player will win; for instance, a difference of 4 indicates a ~75%
+							chance that the higher-rated player will win.</p>
+							<p>Because the ratings are only estimates, the value displayed on the
+							leaderboard is not your actual {mu} value, but a computed value
+							that takes into account both your {mu} and {sigma}. Specifically, it
+							is <i>{mu} - 3{sigma}</i>, which is the lower 99.8th percentile. In other
+							words, the displayed skill means "the system 99.8% certain that your
+							skill is at least this value."</p>
+							<p>Note that this means it is possible for you to lose a game but
+							still see your skill go up; this can happen because your {mu} went
+							down, but your {sigma} went down even more, so your 99.8th
+							percentile went up. On average, everyone's skills will increase
+							over the course of the week, as the {sigma} values drop across the
+							board.</p>
+							<p>You can read more about Trueskill <a target="_blank"
+							href="https://www.microsoft.com/en-us/research/project/trueskill-ranking-system/">
+							here</a> and <a href="http://trueskill.org/" target="_blank">here</a>.</p>
+							<p>The underlying trueskill engine is configured using all the defaults
+							recommended by Microsoft, except that the draw probability is 0%,
+							because there are no draws in Crokinole.</p>
+							<p>Everything you see here was custom made by Nathan for beach week.
+							Lavish him with praise and feedback but mostly praise.</p>
+						</div>
+					</div>
+				</Fragment>
+			</div>
 		)
 	}
 }
