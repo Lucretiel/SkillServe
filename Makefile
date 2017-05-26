@@ -16,8 +16,8 @@ $(OUTPUT_DIR)/bundle.js: $(SRC_FILES) \
 	webpack.config.js \
 	node_modules
 
-	env
-	env NODE_ENV=production webpack  -p
+	env | sort
+	env NODE_ENV=production webpack -p
 
 $(OUTPUT_DIR)/bundle.js.br: $(OUTPUT_DIR)/bundle.js
 	$(BROTLI) < $(OUTPUT_DIR)/bundle.js > $(OUTPUT_DIR)/bundle.js.br
