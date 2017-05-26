@@ -16,7 +16,7 @@ $(OUTPUT_DIR)/bundle.js: $(SRC_FILES) \
 	webpack.config.js \
 	node_modules
 
-	find .. | egrep /webpack
+	find / -type f -executable -iname webpack
 	env NODE_ENV=production $(WEBPACK) -p
 
 $(OUTPUT_DIR)/bundle.js.br: $(OUTPUT_DIR)/bundle.js
