@@ -67,6 +67,10 @@ class SkillBar extends React.PureComponent {
 		}
 	}
 
+	componentWillUnmount() {
+		this.debounceUnhideValue.cancel()
+	}
+
 	render() {
 		const skill = this.props.skill
 		const t = tiers

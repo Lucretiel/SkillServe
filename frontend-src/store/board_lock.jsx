@@ -1,6 +1,7 @@
 import { createAction, handleAction } from "redux-actions"
-import { takeEvery, put, take, select, fork } from "redux-saga/effects"
+import { takeLatest, put, take, select, fork } from "redux-saga/effects"
 import { apiFetch } from "store/util.jsx"
+import { delay } from "redux-saga"
 
 // Actions
 export const refreshLock = createAction('REFRESH_LOCK',
@@ -8,19 +9,19 @@ export const refreshLock = createAction('REFRESH_LOCK',
 )
 
 const receiveLock = createAction('RECEIVE_LOCK',
-	lock => lock
+	({leaderboard, unlock_time}) => ({leaderboard, unlock_time})
 )
 
 // Reducers
 export const lockReducer = handleAction(
 	receiveLock,
-	(state, {payload}) => payload,
+	(state, {payload: {unlock_time}}) => unlock_time,
 	null
 )
 
 // Sagas
 export const refreshLockSaga = function*() {
-	yield takeEvery(refreshLock, function*({payload: leaderboard}) {
+	yield takeLatest(refreshLock, function*({payload: leaderboard}) {
 		const response = yield apiFetch({
 			path: `boards/${leaderboard}`
 		})
@@ -31,7 +32,20 @@ export const refreshLockSaga = function*() {
 		}
 
 		const board_data = yield response.json()
-		yield put(receiveLock(board_data.unlock_time))
+		yield put(receiveLock({leaderboard, unlock_time: board_data.unlock_time}))
+	})
+
+	yield takeLatest(receiveLock, function*({payload: {leaderboard, unlock_time}}) {
+		if(unlock_time === null) {
+			return
+		}
+
+		const now = new Date()
+		const unlock = new Date(unlock_time)
+
+		yield delay(unlock.getTime() - now.getTime())
+		yield put(receiveLock({leaderboard, unlock_time: null}))
+		yield put(refreshLock(leaderboard))
 	})
 }
 
