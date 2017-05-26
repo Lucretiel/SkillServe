@@ -16,7 +16,7 @@ $(OUTPUT_DIR)/bundle.js: $(SRC_FILES) \
 	webpack.config.js \
 	node_modules
 
-	ls $(WEBPACK_DIR)
+	ls node_modules/.bin
 	env NODE_ENV=production $(WEBPACK) -p
 
 $(OUTPUT_DIR)/bundle.js.br: $(OUTPUT_DIR)/bundle.js
