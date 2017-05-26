@@ -55,7 +55,7 @@ const store = createStore(
 			routerMiddleware,
 			sagaMiddleware,
 			process.env.NODE_ENV !== 'production' ? createLogger() : null),
-		autoRehydrate({log: true})
+		autoRehydrate({log: process.env.NODE_ENV !== 'production'})
 	)
 )
 

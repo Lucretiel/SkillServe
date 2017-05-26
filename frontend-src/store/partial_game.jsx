@@ -48,7 +48,7 @@ const submitGameSaga = function*({leaderboard, username, winner, game_type, part
 
 		switch(response.status) {
 		default:
-			yield* emitPartialGame(newGame)
+			yield* emitPartialGame(data)
 		}
 	}
 }
