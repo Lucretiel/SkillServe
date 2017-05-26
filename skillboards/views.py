@@ -174,6 +174,15 @@ class PartialGameView(APIView):
                 "board": board_name
             }, status=status.HTTP_404_NOT_FOUND)
 
+        # Check that the board is not locked
+        unlock_time = board.unlock_time()
+        if unlock_time is not None:
+            return Response({
+                "error": "The board is currently locked",
+                "board": board_name,
+                "unlock_time": unlock_time
+            }, status=status.HTTP_400_BAD_REQUEST)
+
         # Check that the username exists
         try:
             player = board.players.get(username=username)
