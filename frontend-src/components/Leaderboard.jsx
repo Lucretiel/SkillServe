@@ -54,7 +54,7 @@ class PlayerTable extends React.PureComponent {
 		currentUsername: selectUsername(state),
 	}),
 	dispatch => ({
-		refreshPlayers: leaderboard => dispatch(refreshLeaderboard(leaderboard))
+		refreshPlayers: leaderboard => dispatch(refreshLeaderboard({leaderboard}))
 	}))
 class Leaderboard extends React.PureComponent {
 	static propTypes = {

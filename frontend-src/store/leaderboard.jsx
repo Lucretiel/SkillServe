@@ -38,14 +38,14 @@ const rankedPlayers = sortedPlayers => {
 }
 
 // Actions
-export const refreshLeaderboard = createAction("REFRESH_LEADERBOARD")
+export const refreshLeaderboard = createAction("REFRESH_LEADERBOARD",
+	({leaderboard, wipe=false}) => ({leaderboard, wipe}))
 
 const setUpdatedLeaderboard = createAction("RECEIVE_LEADERBOARD",
 	playerData => rankedPlayers(sortedPlayers(processedPlayers(playerData)))
 )
 
 const doneRefreshing = createAction("REFRESH_LEADERBOARD_DONE")
-const leaderboardStale = createAction("LEADERBOARD_STALE")
 
 // Reducers
 const leaderboardListReducer = handleAction(setUpdatedLeaderboard, {
@@ -56,22 +56,19 @@ const leaderboardListReducer = handleAction(setUpdatedLeaderboard, {
 const leaderboardStatusReducer = handleActions({
 	[refreshLeaderboard]: setState(true),
 	[doneRefreshing]: setState(false),
-	[setUpdatedLeaderboard]: setState(false),
 }, false)
-
-const leaderboardStaleReducer = handleActions({
-	[leaderboardStale]: ({payload: isStale}) => isStale,
-	[setUpdatedLeaderboard]: setState(false),
-}, true)
 
 export const leaderboardReducer = combineReducers({
 	players: leaderboardListReducer,
 	updating: leaderboardStatusReducer,
-	stale: leaderboardStaleReducer,
 })
 
 // Sagas
-const doRefreshLeaderboard = function*(leaderboard) {
+const doRefreshLeaderboard = function*({leaderboard, wipe}) {
+	if(wipe) {
+		yield put(setUpdatedLeaderboard([]))
+	}
+
 	try {
 		const response = yield apiFetch({
 			path: `boards/${leaderboard}/players/`
@@ -104,7 +101,6 @@ const doRefreshLeaderboard = function*(leaderboard) {
 export const masterLeaderboardSaga = function*() {
 	yield takeEvery(refreshLeaderboard, action => doRefreshLeaderboard(action.payload))
 
-	yield put(leaderboardStale(true))
 	const leaderboard = yield select(selectAuthLeaderboard)
 
 	if(leaderboard) {

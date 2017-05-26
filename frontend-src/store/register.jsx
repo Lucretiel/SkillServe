@@ -153,7 +153,7 @@ const loginSaga = function*({username, prettyName, leaderboard}) {
 			prettyName: userData.print_name,
 			leaderboard: leaderboard
 		}))
-		yield put(refreshLeaderboard(leaderboard))
+		yield put(refreshLeaderboard({leaderboard, wipe: true}))
 		yield put(refreshLock(leaderboard))
 		yield put(pushLocation("/main"))
 	}

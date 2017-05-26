@@ -29,7 +29,7 @@ const emitPartialGame = function*(newGame, leaderboard) {
 	const currentGame = yield select(selectPartialGameData)
 	if(currentGame === null && newGame === null) return
 	if(currentGame === null || newGame === null || currentGame.fingerprint !== newGame.fingerprint) {
-		yield put(refreshLeaderboard(leaderboard))
+		yield put(refreshLeaderboard({leaderboard}))
 		yield put(receivePartialGame(newGame))
 	}
 }
