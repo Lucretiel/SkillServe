@@ -1,3 +1,4 @@
+import datetime
 import trueskill
 
 from django.db import models
@@ -31,6 +32,12 @@ class Board(models.Model):
             backend='scipy'
         )
 
+    def is_locked(self, when=None):
+        if when is None:
+            when = datetime.datetime.now()
+
+        return self.locks.filter(start__lt=when, end__gt=when).exists()
+
     @property
     def partial_game_id(self):
         '''This should only be used for serialization'''
@@ -38,6 +45,13 @@ class Board(models.Model):
             return PartialGame.objects.get(board=self).id
         except PartialGame.DoesNotExist:
             return None
+
+
+class BoardLock(models.Model):
+    board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name='locks')
+
+    start = models.DateTimeField(db_index=True)
+    end = models.DateTimeField(db_index=True)
 
 
 class PlayerQuerySet(models.QuerySet):
