@@ -25,10 +25,11 @@ export const partialGameReducer = handleAction(
 	null,
 )
 
-const emitPartialGame = function*(newGame) {
+const emitPartialGame = function*(newGame, leaderboard) {
 	const currentGame = yield select(selectPartialGameData)
 	if(currentGame === null && newGame === null) return
 	if(currentGame === null || newGame === null || currentGame.fingerprint !== newGame.fingerprint) {
+		yield put(refreshLeaderboard(leaderboard))
 		yield put(receivePartialGame(newGame))
 	}
 }
@@ -43,12 +44,11 @@ const submitGameSaga = function*({leaderboard, username, winner, game_type, part
 	if(!response.ok) {
 		console.error("Something went wrong!")
 	} else {
-		yield put(refreshLeaderboard(leaderboard))
 		const data = yield response.json()
 
 		switch(response.status) {
 		default:
-			yield* emitPartialGame(data)
+			yield* emitPartialGame(data, leaderboard)
 		}
 	}
 }
@@ -63,7 +63,7 @@ const refreshGameSaga = function*(leaderboard) {
 	if(!response.ok) {
 		switch(response.status) {
 		case 404:
-			yield* emitPartialGame(null)
+			yield* emitPartialGame(null, leaderboard)
 			return
 		default:
 			console.error(response)
@@ -72,11 +72,11 @@ const refreshGameSaga = function*(leaderboard) {
 	} else {
 		switch(response.status) {
 		case 204:
-			yield* emitPartialGame(null)
+			yield* emitPartialGame(null, leaderboard)
 			return
 		default:
 			const data = yield response.json()
-			yield* emitPartialGame(data)
+			yield* emitPartialGame(data, leaderboard)
 		}
 	}
 }

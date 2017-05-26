@@ -25,17 +25,26 @@ def convert_bool(value, default=False):
         'false': False, 'true': True,
         'no': False, 'yes': True,
         'off': False, 'on': True,
+        '0': False, '1': True,
     }[value.lower()]
+
+
+def environ_get_bool(key, *, default):
+    return convert_bool(os.environ.get(key, default), default)
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', '-8idz@b=osbpt6n^3d%x*z1207u0@!+q8_+atlk@fl!(=b#_^q')
-
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = convert_bool(os.environ.get('DEBUG', 'true'))
+DEBUG = environ_get_bool('DEBUG', default=True)
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = (
+    os.environ.get('SECRET_KEY', '-8idz@b=osbpt6n^3d%x*z1207u0@!+q8_+atlk@fl!(=b#_^q')
+    if DEBUG else
+    os.environ['SECRET_KEY']
+)
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split()
 
@@ -135,6 +144,8 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+SECURE_SSL_REDIRECT = environ_get_bool('REDIRECT_SSL', default=False)
 
 
 # Static files (CSS, JavaScript, Images)
