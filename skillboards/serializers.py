@@ -46,6 +46,7 @@ class BoardSerializer(serializers.ModelSerializer):
             "draw_probability",
 
             "partial_game_id",
+
             "unlock_time",
         ]
 
