@@ -15,7 +15,7 @@ import {selectPlayersByName} from "store/leaderboard.jsx"
 class StatBlock extends React.PureComponent {
 	static propTypes = {
 		title: PropTypes.string.isRequired,
-		body: PropTypes.string.isRequired,
+		body: PropTypes.node.isRequired,
 	}
 
 	render() {

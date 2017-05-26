@@ -18,8 +18,9 @@ export const createMaybeSelector = (...args) => createSelector(...initial(args),
 const parseQuery = query => query === null ? "" :
 	'?' + map(query, (value, key) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`).join('&')
 
+const FIXED_URL = 'https://crokinole-ladder.herokuapp.com'
 export const apiFetch = ({path, args, query=null}) =>
-	fetch(`https://crokinole-ladder.herokuapp.com/api/${path}${parseQuery(query)}`,
+	fetch(`/api/${path}${parseQuery(query)}`,
 		merge({
 			headers: {
 				Accept: "application/json",

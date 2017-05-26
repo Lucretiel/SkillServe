@@ -52,14 +52,13 @@ INSTALLED_APPS = [
 
     'nested_inline',
     'rest_framework',
-    'corsheaders',
 
     'skillboards.apps.SkillboardsConfig',
+    'skillstatic.apps.SkillstaticConfig',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -152,5 +151,3 @@ WEBPACK_OUTPUT_DIR = os.environ.get(
 STATICFILES_DIRS = [
     WEBPACK_OUTPUT_DIR
 ]
-
-CORS_ORIGIN_ALLOW_ALL = True

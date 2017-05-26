@@ -43,5 +43,5 @@ def log_tree(request):
 urlpatterns = [
     url(r'^api/', include('skillboards.urls')),
     url(r'^admin/', admin.site.urls),
-    url(r'^loggers$', log_tree)
+    url(r'^', include('skillstatic.urls'))
 ]
