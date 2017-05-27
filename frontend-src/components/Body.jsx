@@ -137,7 +137,7 @@ class Body extends React.PureComponent {
 							<div className="col">
 								<img
 									src="https://media.tenor.co/images/4a950a1e221d93e654047ecee711af5a/tenor.gif"
-									alt="It me"
+									alt="It me" title="It me"
 								/>
 							</div>
 						</div>
