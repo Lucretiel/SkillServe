@@ -62,7 +62,7 @@ const store = createStore(
 )
 
 persistStore(store, {
-	whitelist: ["form", "auth", "leaderboard"]
+	whitelist: ["form", "auth"]
 }, () => {
 	sagaMiddleware.run(function*() {
 		yield fork(redirectSaga)
