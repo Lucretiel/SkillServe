@@ -286,3 +286,8 @@ class PartialGameView(APIView):
                 game.delete()
             # TODO: response
             return Response({})
+
+    def delete(self, request, board_name):
+        partial_game = get_object_or_404(PartialGame, board=board_name)
+        partial_game.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
