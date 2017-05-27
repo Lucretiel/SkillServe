@@ -1,4 +1,4 @@
-.PHONY: all bundle zopfli brotli clean mod-clean clean-all
+.PHONY: all bundle zopfli brotli sizes clean mod-clean clean-all
 
 WEBPACK_OUTPUT_DIR ?= $(PWD)/frontend-dist
 
@@ -15,6 +15,9 @@ all: bundle brotli zopfli
 bundle: $(BUNDLEJS)
 zopfli: $(BUNDLEGZ)
 brotli: $(BUNDLEBR)
+
+sizes: bundle zopfli brotli
+	ls -lh $(WEBPACK_OUTPUT_DIR)
 
 $(BUNDLEJS): $(SRC_FILES) \
 	webpack.config.js \
