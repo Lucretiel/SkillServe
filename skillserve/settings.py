@@ -148,6 +148,7 @@ USE_TZ = True
 SECURE_SSL_REDIRECT = environ_get_bool('REDIRECT_SSL', default=False)
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
+CONN_MAX_AGE = 60
 
 
 # Static files (CSS, JavaScript, Images)
