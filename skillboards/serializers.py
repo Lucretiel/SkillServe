@@ -62,7 +62,7 @@ class GameSerializer(serializers.Serializer):
     class TeamSerializer(serializers.Serializer):
         class PlayerSerializer(serializers.Serializer):
             username = serializers.SlugField(source='player.username')
-            weight = serializers.FloatField()
+            weight = serializers.FloatField(default=1)
 
             def to_internal_value(self, data):
                 if isinstance(data, str):
@@ -80,7 +80,7 @@ class GameSerializer(serializers.Serializer):
         min_length=2,
         source="teams.all"
     )
-    time = serializers.DateTimeField()
+    time = serializers.DateTimeField(allow_null=True, required=False, default=None)
 
 
 class PartialGamePlayerSerializer(serializers.ModelSerializer):

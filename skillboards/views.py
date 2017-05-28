@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from skillboards.models import Board
+from skillboards.models import Game
 from skillboards.models import GameTeamPlayer
 from skillboards.models import PartialGame
 from skillboards.models import PartialGamePlayer
@@ -141,6 +142,23 @@ def game(request, board_name):
     serializer = GameSerializer(data=request.data)
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    request_data = serializer.data
+
+    board = get_object_or_404(Board, name=board_name)
+
+    teams = (
+        (
+            team['rank'],
+            ((
+                board.players.get(username=player['username']),
+                player['weight'],
+            ) for player in team['players'])
+        ) for team in request_data['teams'])
+
+    Game.create_game(board=board, teams=teams, time=request_data['time'])
+
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class PartialGameView(APIView):

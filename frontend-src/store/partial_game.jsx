@@ -12,6 +12,8 @@ import { refreshLeaderboard } from "store/leaderboard.jsx"
 export const submitPartialGame = createAction("SUBMIT_PARTIAL_GAME")
 const receivePartialGame = createAction("RECEIVE_PARTIAL_GAME")
 export const deletePartialGame = createAction("DELETE_PARTIAL_GAME")
+export const submitFullGame = createAction("SUBMIT_FULL_GAME",
+	({winners, losers, leaderboard}) => ({winners, losers, leaderboard}))
 
 // Reducers
 export const partialGameReducer = handleAction(
@@ -98,6 +100,32 @@ const cancelGameSaga = function*(leaderboard) {
 	}
 }
 
+const submitFullGameSaga = function*({winners, losers, leaderboard}) {
+	const data = {
+		teams: [{
+			rank: 0,
+			players: map(winners, username => ({username}))
+		}, {
+			rank: 1,
+			players: map(losers, username => ({username}))
+		}]
+	}
+	const response = yield apiPost({
+		path: `boards/${leaderboard}/full_game`,
+		data: data
+	})
+
+	if(!response.ok) {
+		switch(response.status) {
+		default:
+			console.error(response)
+			return
+		}
+	}
+
+	yield put(refreshLeaderboard({leaderboard}))
+}
+
 const refreshLoopSaga = function*(tickRate) {
 	for(;;) {
 		const timer = yield fork(delay, tickRate)
@@ -113,6 +141,7 @@ export const masterPartialGameSaga = function*() {
 	yield fork(refreshLoopSaga, 1000)
 	yield takeEvery(submitPartialGame, action => submitGameSaga(action.payload))
 	yield takeEvery(deletePartialGame, action => cancelGameSaga(action.payload))
+	yield takeEvery(submitFullGame, action => submitFullGameSaga(action.payload))
 }
 
 // Selectors
