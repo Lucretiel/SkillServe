@@ -7,9 +7,12 @@ from django.db.models import Case
 from django.db.models import F
 from django.db.models import Q
 from django.db.models import When
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 from django.utils import timezone
 
 from skillboards import calculations as calc
+from skillboards.calculations import calculate_updated_rankings
 
 
 class Board(models.Model):
@@ -98,6 +101,9 @@ class PlayerQuerySet(models.QuerySet):
     def with_player_info(self):
         return self.with_skill().with_provisional().with_upper_skill()
 
+    def enabled(self):
+        return self.filter(disabled=False)
+
 
 class Player(models.Model):
     username = models.SlugField(db_index=True)
@@ -113,6 +119,8 @@ class Player(models.Model):
     losses = models.PositiveIntegerField(default=0)
 
     objects = PlayerQuerySet.as_manager()
+
+    disabled = models.BooleanField(default=False)
 
     class Meta:
         default_manager_name = base_manager_name = "objects"
@@ -156,12 +164,80 @@ class Player(models.Model):
 
 class Game(models.Model):
     board = models.ForeignKey(Board, on_delete=models.CASCADE)
-    time = models.DateTimeField(auto_now_add=True)
+    time = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    def __str__(self):
+        return (
+            ' vs '.join(str(team) for team in self.teams.all()) +
+            f' ({self.time}) ({self.board.name})'
+        )
+
+    def get_teams(self):
+        self.full_clean()
+
+        return [
+            calc.Team(
+                rank=team.rank,
+                players={
+                    player.username: calc.Player(rating=player.rating, instance=player)
+                    for player in team.get_players()
+                })
+            for team in self.teams.all()
+        ]
+
+
+def _update_ranking(board, env, game):
+    teams = game.get_teams()
+    results = calculate_updated_rankings(teams, env)
+
+    for result_data in results.values():
+        player_instance = result_data.instance
+        player_instance.rating = result_data.rating
+        player_instance.games = F('games') + 1
+        if result_data.winner:
+            player_instance.wins = F('wins') + 1
+        else:
+            player_instance.losses = F('losses') + 1
+        player_instance.save()
+
+
+@transaction.atomic
+def update_all_rankings(board):
+    # Reset all rankings
+    Player.objects.filter(board=board).update(
+        mu=board.mu,
+        sigma=board.sigma,
+        wins=0,
+        games=0,
+        losses=0
+    )
+
+    env = board.trueskill_environ()
+    for game in Game.objects.order_by('time'):
+        _update_ranking(board, env, game)
+
+
+@transaction.atomic
+def update_latest_ranking(board, game):
+    env = board.trueskill_environ()
+    _update_ranking(board, env, game)
+
+
+@receiver(post_delete, sender=Game)
+def update_rankings_on_delete(instance, **kwargs):
+    update_all_rankings(instance.board)
 
 
 class GameTeam(models.Model):
     game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name='teams')
     rank = models.PositiveSmallIntegerField()
+
+    def __str__(self):
+        return ', '.join(p.player.username for p in self.players.all()) + f' (rank {self.rank})'
+
+    def get_players(self):
+        for gplayer in self.players.select_related('player'):
+            yield gplayer.player
 
 
 class GameTeamPlayer(models.Model):
@@ -188,6 +264,17 @@ class PartialGame(models.Model):
 
     class NonFullGame(Exception):
         pass
+
+    def is_ready(self):
+        self.full_clean()
+
+        max_category = 1 if self.game_type is PartialGame.SOLO else 2
+
+        for winner in True, False:
+            if self.player_info.filter(winner=winner).count() != max_category:
+                return False
+
+        return True
 
     def get_teams(self):
         self.full_clean()
@@ -225,6 +312,26 @@ class PartialGame(models.Model):
             )
         ))
 
+    @transaction.atomic
+    def create_game(self):
+        game = Game(board=self.board)
+        game.full_clean()
+        game.save()
+
+        for winner in True, False:
+            team_instance = GameTeam(game=game, rank=0 if winner else 1)
+            team_instance.full_clean()
+            team_instance.save()
+
+            for gplayer in self.player_info.select_related('player').filter(winner=winner):
+                player = gplayer.player
+                player_instance = GameTeamPlayer(team=team_instance, player=player)
+
+                player_instance.full_clean()
+                player_instance.save()
+
+        update_latest_ranking(board=self.board, game=game)
+
 
 class PartialGamePlayer(models.Model):
     game = models.ForeignKey(PartialGame, on_delete=models.CASCADE, related_name="player_info")
@@ -233,21 +340,3 @@ class PartialGamePlayer(models.Model):
 
     class Meta:
         unique_together = index_together = ("game", "player")
-
-
-@transaction.atomic
-def create_game_from_teams(teams, board):
-    game = Game(board=board)
-    game.full_clean()
-    game.save()
-
-    for team in teams:
-        team_instance = GameTeam(game=game, rank=team.rank)
-        team_instance.full_clean()
-        team_instance.save()
-        for player in team.players.values():
-            player_instance = GameTeamPlayer(
-                team=team_instance,
-                player=player.instance)
-            player_instance.full_clean()
-            player_instance.save()

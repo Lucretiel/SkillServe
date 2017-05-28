@@ -1,6 +1,5 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
-from django.db.models import F
 from django.shortcuts import get_object_or_404
 
 from rest_framework import status
@@ -8,13 +7,11 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from skillboards import calculations as calc
 from skillboards.models import Board
 from skillboards.models import GameTeamPlayer
 from skillboards.models import PartialGame
 from skillboards.models import PartialGamePlayer
 from skillboards.models import Player
-from skillboards.models import create_game_from_teams
 from skillboards.serializers import BoardSerializer
 from skillboards.serializers import GameSerializer
 from skillboards.serializers import PartialGameRequestSerializer
@@ -39,7 +36,7 @@ def board_detail(request, board_name):
 def player_list(request, board_name):
     board = get_object_or_404(Board, name=board_name)
     request_user = request.GET.get('as', None)
-    players = Player.objects.filter(board=board_name).with_player_info()
+    players = Player.objects.filter(board=board_name).with_player_info().enabled()
 
     if request_user is not None:
         players = list(players)
@@ -261,30 +258,13 @@ class PartialGameView(APIView):
                 gamePlayer.save()
 
             # Attempt to process
-            try:
-                game_teams = game.get_teams()
-            except PartialGame.NonFullGame:
+            if not game.is_ready():
                 # TODO: response
                 return self.serialized_game(game)
 
-            trueskill_env = board.trueskill_environ()
-            results = calc.calculate_updated_rankings(game_teams, trueskill_env)
-
-            with transaction.atomic():
-                for result_data in results.values():
-                    player_instance = result_data.instance
-                    player_instance.rating = result_data.rating
-                    player_instance.games = F('games') + 1
-                    if result_data.winner:
-                        player_instance.wins = F('wins') + 1
-                    else:
-                        player_instance.losses = F('losses') + 1
-                    player_instance.save()
-
-                create_game_from_teams(game_teams, board)
-
-                game.delete()
             # TODO: response
+            game.create_game()
+            game.delete()
             return Response({})
 
     def delete(self, request, board_name):

@@ -1,18 +1,17 @@
 import { createAction, handleAction } from "redux-actions"
 import { isEmpty, filter, map } from "lodash"
 import { createSelector } from "reselect"
-import { setPayload, createMaybeSelector, apiPost, apiFetch } from "store/util.jsx"
+import { setPayload, createMaybeSelector, apiPost, apiFetch, apiDelete } from "store/util.jsx"
 import { selectLeaderboard as selectAuthLeaderboard} from "store/register.jsx"
 import { put, select, fork, join, takeEvery } from "redux-saga/effects"
 import { delay } from "redux-saga"
 
 import { refreshLeaderboard } from "store/leaderboard.jsx"
 
-const ROOT_URL = "https://crokinole-ladder.herokuapp.com"
-
 // Actions
 export const submitPartialGame = createAction("SUBMIT_PARTIAL_GAME")
 const receivePartialGame = createAction("RECEIVE_PARTIAL_GAME")
+export const deletePartialGame = createAction("DELETE_PARTIAL_GAME")
 
 // Reducers
 export const partialGameReducer = handleAction(
@@ -55,7 +54,6 @@ const submitGameSaga = function*({leaderboard, username, winner, game_type, part
 
 // Sagas
 const refreshGameSaga = function*(leaderboard) {
-	const url = `${ROOT_URL}/api/`
 	const response = yield apiFetch({
 		path: `boards/${leaderboard}/partial_game`,
 	})
@@ -81,6 +79,25 @@ const refreshGameSaga = function*(leaderboard) {
 	}
 }
 
+const cancelGameSaga = function*(leaderboard) {
+	const response = yield apiDelete({
+		path: `boards/${leaderboard}/partial_game`
+	})
+
+	if(!response.ok) {
+		switch(response.status) {
+		default:
+			console.error(response)
+			return
+		}
+	} else {
+		switch(response.status) {
+		default:
+			yield* emitPartialGame(null, leaderboard)
+		}
+	}
+}
+
 const refreshLoopSaga = function*(tickRate) {
 	for(;;) {
 		const timer = yield fork(delay, tickRate)
@@ -95,6 +112,7 @@ const refreshLoopSaga = function*(tickRate) {
 export const masterPartialGameSaga = function*() {
 	yield fork(refreshLoopSaga, 1000)
 	yield takeEvery(submitPartialGame, action => submitGameSaga(action.payload))
+	yield takeEvery(deletePartialGame, action => cancelGameSaga(action.payload))
 }
 
 // Selectors

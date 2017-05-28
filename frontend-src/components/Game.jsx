@@ -12,6 +12,7 @@ import { playerShape as boardPlayerShape } from "components/Leaderboard.jsx"
 
 import {
 	submitPartialGame,
+	deletePartialGame,
 	selectPartialGameId,
 	selectPartialGameType,
 	selectWinnersFull,
@@ -159,7 +160,9 @@ class Toggle extends React.PureComponent {
 	}),
 	dispatch => ({
 		submitPartialGame: data => dispatch(submitPartialGame(data)),
-		refreshLock: leaderboard => dispatch(refreshLock(leaderboard))
+		refreshLock: leaderboard => dispatch(refreshLock(leaderboard)),
+		deletePartialGame: leaderboard => dispatch(deletePartialGame(leaderboard))
+
 	})
 )
 class Game extends React.PureComponent {
@@ -278,6 +281,10 @@ class Game extends React.PureComponent {
 		}) :
 		null
 
+	delete = () => this.props.leaderboard != null ?
+		this.props.deletePartialGame(this.props.leaderboard) :
+		null
+
 	refreshLock = () => this.props.refreshLock(this.props.leaderboard)
 
 	componentDidMount() {
@@ -342,6 +349,18 @@ class Game extends React.PureComponent {
 					<PartialGamePreview ally={this.getAlly()} oppose={this.getOppose()} />
 				</div>
 			</div>
+			{this.props.partialGameId != null ?
+				<div className="row pt-2">
+					<div className="col">
+						<button
+							type="button" className="btn btn-danger"
+							onClick={this.delete}
+					 	>
+					 		Cancel
+					 	</button>
+					</div>
+				</div> : null
+			}
 		</div>
 	}
 }

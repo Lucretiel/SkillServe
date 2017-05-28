@@ -40,3 +40,12 @@ export const apiPost = ({path, data, args, query=null}) =>
 			body: JSON.stringify(data),
 		}, args)
 	})
+
+export const apiDelete = ({path, args, query=null}) =>
+	apiFetch({
+		path: path,
+		query: query,
+		args: merge({
+			method: "DELETE"
+		}, args)
+	})
