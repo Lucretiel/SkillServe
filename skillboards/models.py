@@ -185,6 +185,30 @@ class Game(models.Model):
             for team in self.teams.all()
         ]
 
+    @classmethod
+    @transaction.atomic
+    def create_game(cls, *, board, teams, time=None):
+        game_instance = cls(board=board)
+        game_instance.full_clean()
+        game_instance.save()
+
+        for rank, players in teams:
+            team_instance = GameTeam(game=game_instance, rank=rank)
+            team_instance.full_clean()
+            team_instance.save()
+
+            for player, weight in players:
+                player_instance = GameTeamPlayer(team=team_instance, player=player, weight=weight)
+                player_instance.full_clean()
+                player_instance.save()
+
+        if time is None:
+            update_latest_ranking(board=board, game=game_instance)
+        else:
+            game_instance.time = time
+            game_instance.save()
+            update_all_rankings(board)
+
 
 def _update_ranking(board, env, game):
     teams = game.get_teams()
@@ -240,10 +264,18 @@ class GameTeam(models.Model):
             yield gplayer.player
 
 
+def validate_weight(value):
+    if not 0 <= value <= 1:
+        raise ValidationError(
+            "Weight must be between 0 and 1, got %(value)s",
+            params={"value": value}
+        )
+
+
 class GameTeamPlayer(models.Model):
     team = models.ForeignKey(GameTeam, on_delete=models.CASCADE, related_name='players')
     player = models.ForeignKey(Player, on_delete=models.PROTECT)
-    # TODO: store weight
+    weight = models.FloatField(validators=[validate_weight], default=1)
 
     class Meta:
         unique_together = index_together = ('team', 'player')
@@ -276,33 +308,6 @@ class PartialGame(models.Model):
 
         return True
 
-    def get_teams(self):
-        self.full_clean()
-        max_category = 1 if self.game_type is PartialGame.SOLO else 2
-        # Count winners and losers
-        for winner in True, False:
-            count = self.player_info.filter(winner=winner).count()
-            type = "winning" if winner else "losing"
-            if count < max_category:
-                raise PartialGame.NonFullGame(f"Not enough {type} players have entered yet!")
-            elif count > max_category:
-                raise Exception(f"Too many {type} players have entered!")
-
-        def get_players(winner):
-            for gplayer in self.player_info.select_related('player').filter(winner=winner):
-                yield gplayer.player
-
-        return [
-            calc.Team(
-                rank=0 if winner else 1,
-                players={
-                    player.username: calc.Player(rating=player.rating, instance=player)
-                    for player in get_players(winner=winner)
-                }
-            )
-            for winner in (True, False)
-        ]
-
     def fingerprint(self):
         return hash((
             self.board.name,
@@ -312,25 +317,17 @@ class PartialGame(models.Model):
             )
         ))
 
-    @transaction.atomic
     def create_game(self):
-        game = Game(board=self.board)
-        game.full_clean()
-        game.save()
-
-        for winner in True, False:
-            team_instance = GameTeam(game=game, rank=0 if winner else 1)
-            team_instance.full_clean()
-            team_instance.save()
-
+        def emit_players(winner):
             for gplayer in self.player_info.select_related('player').filter(winner=winner):
-                player = gplayer.player
-                player_instance = GameTeamPlayer(team=team_instance, player=player)
+                yield gplayer.player, 1
 
-                player_instance.full_clean()
-                player_instance.save()
+        def emit_teams():
+            for winner in True, False:
+                rank = 0 if winner else 1
+                yield rank, emit_players(winner)
 
-        update_latest_ranking(board=self.board, game=game)
+        Game.create_game(board=self.board, teams=emit_teams())
 
 
 class PartialGamePlayer(models.Model):

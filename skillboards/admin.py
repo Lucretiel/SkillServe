@@ -46,6 +46,7 @@ class GameTeamInline(NestedStackedInline):
 class GameAdmin(NestedModelAdmin):
     inlines = [GameTeamInline]
     list_filter = ['board']
+    ordering = ['-time']
 
 
 # Partial game models

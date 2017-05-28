@@ -62,6 +62,7 @@ class GameSerializer(serializers.Serializer):
     class TeamSerializer(serializers.Serializer):
         class PlayerSerializer(serializers.Serializer):
             username = serializers.SlugField(source='player.username')
+            weight = serializers.FloatField()
 
             def to_internal_value(self, data):
                 if isinstance(data, str):
@@ -73,6 +74,7 @@ class GameSerializer(serializers.Serializer):
             min_length=1,
             source="players.all")
         rank = serializers.IntegerField(min_value=0)
+
     teams = serializers.ListField(
         child=TeamSerializer(),
         min_length=2,

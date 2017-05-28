@@ -135,6 +135,14 @@ def register(request, board_name):
     return Response(player_serializer.data, status=code)
 
 
+@api_view(["POST"])
+@transaction.atomic
+def game(request, board_name):
+    serializer = GameSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class PartialGameView(APIView):
     @staticmethod
     def serialized_game(game):
