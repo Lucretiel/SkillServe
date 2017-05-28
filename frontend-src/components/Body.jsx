@@ -77,7 +77,7 @@ const sigma = <i><b>σ</b></i>
 class Body extends React.PureComponent {
 	render() {
 		const pages = [
-			{path: '/main/game', label: 'Game'},
+			/*{path: '/main/game', label: 'Game'},*/
 			{path: '/main/leaderboard', label: 'Leaderboard'},
 			{path: '/main/profile', label: 'Profile'},
 			{path: '/main/about', label: 'About'},
@@ -91,9 +91,9 @@ class Body extends React.PureComponent {
 						<RouterNav pages={pages} currentPath={currentPath} prettyName={prettyName} skill={skill}/>
 					</div>
 				</div>
-				<Fragment forRoute='/main/game'>
+				{/*<Fragment forRoute='/main/game'>
 					<Game />
-				</Fragment>
+				</Fragment>*/}
 				<Fragment forRoute='/main/leaderboard'>
 					<Leaderboard/>
 				</Fragment>

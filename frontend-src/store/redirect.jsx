@@ -10,7 +10,7 @@ const mainPattern = new UrlPattern("/main")
 const redirectLogic = function*(targetLocation) {
 	// TODO: extract these rules
 	if(rootPattern.match(targetLocation)) {
-		yield put(push("/main/game"))
+		yield put(push("/main/leaderboard"))
 		return
 	}
 
@@ -23,7 +23,7 @@ const redirectLogic = function*(targetLocation) {
 	}
 
 	if(mainPattern.match(targetLocation)) {
-		yield put(push("/main/game"))
+		yield put(push("/main/leaderboard"))
 		return
 	}
 }

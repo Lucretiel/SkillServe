@@ -53,6 +53,7 @@
     "redux-logger": "^3.0.1",
     "redux-persist": "^4.8.0",
     "redux-saga": "^0.15.3",
+    "react-flip-move": "^2.9.13",
     "reselect": "^3.0.0",
     "sass-loader": "^6.0.5",
     "style-loader": "^0.18.0",
@@ -61,8 +62,5 @@
     "webpack-bundle-analyzer": "^2.8.1",
     "webpack-dev-server": "^2.4.5",
     "whatwg-fetch": "^2.0.3"
-  },
-  "devDependencies": {
-    "react-flip-move": "^2.9.13"
   }
 }

@@ -67,26 +67,29 @@ class PlayerTable extends React.PureComponent {
 					<th>Game</th>
 				</tr>
 			</thead>
-			<FlipMove duration={750} typeName="tbody">
-				{map(players, ({username, prettyName, rank, skill, quality, isProvisional}) =>
-					<tr key={username} className={username === currentUsername ? 'table-warning' : ''}>
-						<td>{rank}</td>
-						<td>{prettyName}</td>
-						<td>
-							<Motion style={{skill: skillSpring(skill)}}>
-								{({skill}) =>
-									<span>{
-										formatSkill({skill, isProvisional})
-									}</span>
-								}
-							</Motion>
-						</td>
-						<td>
-							{this.buttonForPlayer(username)}
-						</td>
-					</tr>
-				)}
-			</FlipMove>
+			{players.length !== 0 ?
+				<FlipMove duration={750} typeName="tbody">
+					{map(players, ({username, prettyName, rank, skill, quality, isProvisional}) =>
+						<tr key={username} className={username === currentUsername ? 'table-warning' : ''}>
+							<td>{rank}</td>
+							<td>{prettyName}</td>
+							<td>
+								<Motion style={{skill: skillSpring(skill)}}>
+									{({skill}) =>
+										<span>{
+											formatSkill({skill, isProvisional})
+										}</span>
+									}
+								</Motion>
+							</td>
+							<td>
+								{this.buttonForPlayer(username)}
+							</td>
+						</tr>
+					)}
+				</FlipMove> :
+				<tbody></tbody>
+			}
 		</table>
 	}
 }
