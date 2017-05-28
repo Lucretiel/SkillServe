@@ -3232,6 +3232,10 @@ react-dom@^15.5.4:
     object-assign "^4.1.0"
     prop-types "~15.5.7"
 
+react-flip-move@^2.9.13:
+  version "2.9.13"
+  resolved "https://registry.yarnpkg.com/react-flip-move/-/react-flip-move-2.9.13.tgz#bf3909f707e2c3fc511c762346fa3ae89b282c50"
+
 react-motion@^0.5.0:
   version "0.5.0"
   resolved "https://registry.yarnpkg.com/react-motion/-/react-motion-0.5.0.tgz#1708fc2aee552900d21c1e6bed28346863e017b6"

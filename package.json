@@ -13,7 +13,6 @@
     "web-serve": "env NODE_ENV=development webpack-dev-server --progress",
     "web-serve-dev": "env NODE_ENV=development webpack-dev-server --progress -d",
     "web-serve-prod": "env NODE_ENV=production webpack-dev-server --progress -p",
-
     "heroku-postbuild": "make -j all sizes"
   },
   "repository": {
@@ -62,5 +61,8 @@
     "webpack-bundle-analyzer": "^2.8.1",
     "webpack-dev-server": "^2.4.5",
     "whatwg-fetch": "^2.0.3"
+  },
+  "devDependencies": {
+    "react-flip-move": "^2.9.13"
   }
 }

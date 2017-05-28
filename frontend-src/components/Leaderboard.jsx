@@ -11,6 +11,7 @@ import {Motion} from 'react-motion'
 
 import {skillSpring} from 'components/util.jsx'
 import {formatSkill} from 'util.jsx'
+import FlipMove from 'react-flip-move';
 
 export const playerShape = PropTypes.shape({
 	prettyName: PropTypes.string.isRequired,
@@ -66,7 +67,7 @@ class PlayerTable extends React.PureComponent {
 					<th>Game</th>
 				</tr>
 			</thead>
-			<tbody>
+			<FlipMove duration={750} typeName="tbody">
 				{map(players, ({username, prettyName, rank, skill, quality, isProvisional}) =>
 					<tr key={username} className={username === currentUsername ? 'table-warning' : ''}>
 						<td>{rank}</td>
@@ -85,7 +86,7 @@ class PlayerTable extends React.PureComponent {
 						</td>
 					</tr>
 				)}
-			</tbody>
+			</FlipMove>
 		</table>
 	}
 }
