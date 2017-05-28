@@ -12,7 +12,7 @@ class LockInline(admin.TabularInline):
 
 @admin.register(models.Board)
 class BoardAdmin(admin.ModelAdmin):
-    inlines = [ LockInline ]
+    inlines = [LockInline]
 
 
 @admin.register(models.Player)
@@ -57,3 +57,4 @@ class PartialGamePlayerInline(admin.TabularInline):
 @admin.register(models.PartialGame)
 class PartialGameAdmin(admin.ModelAdmin):
     inlines = [PartialGamePlayerInline]
+    list_filter = ['board']
