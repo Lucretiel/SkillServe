@@ -27,6 +27,7 @@ class PlayerAdmin(admin.ModelAdmin):
         return instance.is_provisional
 
     readonly_fields = ('skill', 'is_provisional')
+    list_filter = ['board']
 
 
 # Game models
@@ -44,6 +45,7 @@ class GameTeamInline(NestedStackedInline):
 @admin.register(models.Game)
 class GameAdmin(NestedModelAdmin):
     inlines = [GameTeamInline]
+    list_filter = ['board']
 
 
 # Partial game models
