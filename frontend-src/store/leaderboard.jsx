@@ -84,10 +84,14 @@ const doRefreshLeaderboard = function*({leaderboard, wipe}) {
 		}
 
 		const responseData = yield response.json()
+		yield put(setUpdatedLeaderboard(responseData))
+
 		const username = yield select(selectUsername)
 		const userData = find(responseData, {username})
-		yield put(setUpdatedLeaderboard(responseData))
-		yield put(updateUser(userData))
+
+		if(userData) {
+			yield put(updateUser(userData))
+		}
 
 	} catch(err) {
 		yield put(setUpdatedLeaderboard(err))

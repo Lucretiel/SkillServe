@@ -124,6 +124,8 @@ const loginWork = function*({username, prettyName, leaderboard}) {
 
 const loginSaga = function*({username, prettyName, leaderboard}) {
 	yield put(setStateWorking({}))
+	yield put(refreshLeaderboard({leaderboard, wipe: true}))
+	yield put(refreshLock(leaderboard))
 	let response
 	try {
 		response = yield* loginWork({username, prettyName, leaderboard})
@@ -153,8 +155,6 @@ const loginSaga = function*({username, prettyName, leaderboard}) {
 			prettyName: userData.print_name,
 			leaderboard: leaderboard
 		}))
-		yield put(refreshLeaderboard({leaderboard, wipe: true}))
-		yield put(refreshLock(leaderboard))
 		yield put(pushLocation("/main"))
 	}
 }
