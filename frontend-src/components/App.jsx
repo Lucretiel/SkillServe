@@ -37,6 +37,13 @@ class App extends React.PureComponent {
 						<Body />
 					</Fragment> : null
 				}
+				<footer className="footer" style={{'align-self': 'flex-end'}}>
+					<small>
+						<a href="https://paper.dropbox.com/doc/Beach-Week-Crokinole-Rules-JhpiBUr8YFZ2aVtZcEwH0" target="_blank">
+							Official Beach Week Crokinole Rules
+						</a>
+					</small>
+				</footer>
 			</div>
 		)
 	}

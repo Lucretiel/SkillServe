@@ -212,7 +212,7 @@ class Leaderboard extends React.PureComponent {
 				</div> : null
 			}
 
-			<div className="row">
+			<div className="row pb=2">
 				<div className="col">
 					<button className="btn btn-primary mr-2" type="button" onClick={this.refreshPlayers}>
 						Refresh
