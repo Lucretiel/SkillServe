@@ -18,26 +18,28 @@ class App extends React.PureComponent {
 	render() {
 		const {isAuthenticated} = this.props
 		return (
-			<div className="container">
-				<div className="row">
-					<div className="col">
-						<h1 className="text-sm-left text-center">
-							Crokinole Ladder <br className="hidden-md-up"/>
-							<small className="text-muted">Beach Week 2017</small>
-						</h1>
+			<div>
+				<div className="container">
+					<div className="row">
+						<div className="col">
+							<h1 className="text-sm-left text-center">
+								Crokinole Ladder <br className="hidden-md-up"/>
+								<small className="text-muted">Beach Week 2017</small>
+							</h1>
+						</div>
 					</div>
+					<Fragment forRoute="/login">
+						<div className="col">
+							<SignInForm />
+						</div>
+					</Fragment>
+					{isAuthenticated ?
+						<Fragment forRoute="/main*">
+							<Body />
+						</Fragment> : null
+					}
 				</div>
-				<Fragment forRoute="/login">
-					<div className="col">
-						<SignInForm />
-					</div>
-				</Fragment>
-				{isAuthenticated ?
-					<Fragment forRoute="/main*">
-						<Body />
-					</Fragment> : null
-				}
-				<footer className="footer" style={{'align-self': 'flex-end'}}>
+				<footer className="footer mt-2 text-center">
 					<small>
 						<a href="https://paper.dropbox.com/doc/Beach-Week-Crokinole-Rules-JhpiBUr8YFZ2aVtZcEwH0" target="_blank">
 							Official Beach Week Crokinole Rules
