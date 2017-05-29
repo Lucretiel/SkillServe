@@ -3,6 +3,7 @@ import hashlib
 from functools import lru_cache
 
 from django.http import HttpResponse
+from django.shortcuts import redirect
 from django.template import loader
 from django.views.decorators.http import condition
 
@@ -26,3 +27,7 @@ def compute_etag(request):
 @condition(etag_func=compute_etag)
 def index(request):
     return HttpResponse(grab_template())
+
+
+def redirectGame(request):
+    return redirect('/main/leaderboard', permanent=True)

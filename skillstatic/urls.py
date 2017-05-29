@@ -4,5 +4,7 @@ from skillstatic import views
 
 urlpatterns = [url(pattern, views.index) for pattern in [
     r'^$', r'^login/?$', r'^main/?$',
-    r'^main/(?:leaderboard|profile|about)/?$'
-]]
+    r'^main/(?:leaderboard|profile|about)/?$',
+]] + [
+    url(r'main/game/?$', views.redirectGame)
+]
