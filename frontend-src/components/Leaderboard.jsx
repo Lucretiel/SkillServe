@@ -5,9 +5,11 @@ import PropTypes from 'prop-types'
 import {connect} from 'react-redux'
 import {selectPlayers, refreshLeaderboard} from 'store/leaderboard.jsx'
 import {selectLeaderboard, selectUsername} from 'store/register.jsx'
-import {submitFullGame} from 'store/partial_game.jsx'
-import {map, some as any, find, without, includes} from 'lodash'
+import {submitFullGame} from 'store/submit_game.jsx'
+import {map, some as any, find, without, includes, join} from 'lodash'
 import {Motion} from 'react-motion'
+import { selectFragment } from "router/selectors.jsx"
+import { replace } from "router/actions.jsx"
 
 import {skillSpring} from 'components/util.jsx'
 import {formatSkill} from 'util.jsx'
@@ -24,6 +26,15 @@ export const playerShape = PropTypes.shape({
 
 const playerArray = PropTypes.arrayOf(playerShape.isRequired)
 
+const selectHighlighted = createSelector(selectFragment, fragment => {
+	const match = fragment.match(/^highlight=(([a-zA-Z0-9-_]+,)+)$/)
+	return match ? match[1].split(',') : []
+})
+
+@connect(
+	state => ({highlighted: selectHighlighted(state)}),
+	dispatch => ({replaceLoc: loc => dispatch(replace({path: loc}))})
+)
 class PlayerTable extends React.PureComponent {
 	static propTypes = {
 		players: playerArray.isRequired,
@@ -31,6 +42,8 @@ class PlayerTable extends React.PureComponent {
 		rotatePlayer: PropTypes.func.isRequired,
 		winners: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
 		losers: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
+		highlighted: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
+		replaceLoc: PropTypes.func.isRequired,
 	}
 
 	isWinner = username => includes(this.props.winners, username)
@@ -55,6 +68,19 @@ class PlayerTable extends React.PureComponent {
 			</button>
 	)
 
+	highlight = username =>
+		this.props.replaceLoc({
+			hash: 'highlight=' + join([...this.props.highlighted, username], ',')
+		})
+
+	unHighlight = username =>
+		this.props.replaceLoc({
+			hash: 'highlight=' + join(without(this.props.highlighted, username), ',')
+		})
+
+	isHighlighted = username =>
+		includes(this.props.highlighted, username)
+
 	render() {
 		const {players, currentUsername} = this.props
 
@@ -70,7 +96,15 @@ class PlayerTable extends React.PureComponent {
 			{players.length !== 0 ?
 				<FlipMove duration={750} typeName="tbody">
 					{map(players, ({username, prettyName, rank, skill, quality, isProvisional}) =>
-						<tr key={username} className={username === currentUsername ? 'table-warning' : ''}>
+						<tr
+							key={username} className={
+								(username === currentUsername ? 'table-warning ' : '') +
+								(includes(this.props.highlighted) ? 'table-info ' : '')}
+							onClick={this.isHighlighted(username) ?
+								() => this.unHighlight(username) :
+								() => this.highlight(username)
+							}
+						>
 							<td>{rank}</td>
 							<td>{prettyName}</td>
 							<td>

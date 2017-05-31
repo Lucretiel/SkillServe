@@ -8,12 +8,12 @@ import { takeEvery, put, take, select, fork } from "redux-saga/effects"
 import { formatSkill } from "util.jsx"
 
 const processedPlayers = playerData => map(playerData,
-	({username, print_name, skill, is_provisional, quality}) => ({
-		username: username,
-		skill: skill,
+	({username, print_name, skill, is_provisional, quality, mu, sigma}) => ({
+		username, mu, sigma, skill,
 		prettyName: print_name,
 		isProvisional: is_provisional,
 		displaySkill: formatSkill({skill, isProvisional: is_provisional}),
+
 	}))
 
 const sortedPlayers = players => orderBy(players,

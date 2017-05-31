@@ -13,16 +13,21 @@ import {refreshRecent, selectRecentGame} from 'store/recent_game.jsx'
 import {selectLeaderboard, selectUsername, refreshUser, selectStats} from 'store/register.jsx'
 import {selectPlayersByName} from "store/leaderboard.jsx"
 
-class StatBlock extends React.PureComponent {
-	static propTypes = {
-		title: PropTypes.string.isRequired,
-		body: PropTypes.node.isRequired,
-	}
+const mu = <i><b>μ</b></i>
+const sigma = <i><b>σ</b></i>
+const variance = <i><b>σ</b><sup>2</sup></i>
 
+class StatBlock extends React.PureComponent {
 	render() {
+		const title = this.props.children[0]
+		const body = this.props.children[1]
+
 		return <div className="card bg-faded">
 			<div className="card-block" style={{padding: "0.5rem", paddingLeft: "1rem"}}>
-				<span className="card-text"><small>{this.props.title}</small><br /><b>{this.props.body}</b></span>
+				<span className="card-text">
+					<small>{title}</small><br />
+					<b>{body}</b>
+				</span>
 			</div>
 		</div>
 	}
@@ -216,6 +221,8 @@ class Profile extends React.PureComponent {
 			wins: PropTypes.number.isRequired,
 			losses: PropTypes.number.isRequired,
 			games: PropTypes.number.isRequired,
+			mu: PropTypes.number.isRequired,
+			sigma: PropTypes.number.isRequired,
 		}).isRequired
 	}
 
@@ -226,7 +233,7 @@ class Profile extends React.PureComponent {
 	render() {
 		const {skill, signOut, username, stats} = this.props
 
-		return <div className="container-fluid pt-2 px-0">
+		return <div className="container-fluid px-0 pt-2">
 			<div className="row pb-2">
 				<div className="col">
 					<Motion defaultStyle={{skill: 0}} style={{skill: skillSpring(skill)}}>
@@ -235,18 +242,39 @@ class Profile extends React.PureComponent {
 				</div>
 			</div>
 			<div className="row">
-				<div className="col">
-					<StatBlock title="Games" body={stats.games} />
+				<div className="col-4 col-md pb-2">
+					<StatBlock>
+						<span>Games</span>
+						<span>{stats.games}</span>
+					</StatBlock>
 				</div>
-				<div className="col">
-					<StatBlock title="Wins" body={stats.wins} />
+				<div className="col-4 col-md pb-2">
+					<StatBlock>
+						<span>Wins</span>
+						<span>{stats.wins}</span>
+					</StatBlock>
 				</div>
-				<div className="col">
-					<StatBlock title="Losses" body={stats.losses} />
+				<div className="col-4 col-md pb-2">
+					<StatBlock>
+						<span>Losses</span>
+						<span>{stats.losses}</span>
+					</StatBlock>
+				</div>
+				<div className="col-6 col-md pb-2">
+					<StatBlock>
+						<span>Rating ({mu})</span>
+						<span>{stats.mu.toFixed(2)}</span>
+					</StatBlock>
+				</div>
+				<div className="col-6 col-md pb-2">
+					<StatBlock>
+						<span>Variance ({variance})</span>
+						<span>{(stats.sigma **2).toFixed(2)}</span>
+					</StatBlock>
 				</div>
 			</div>
 			{this.props.recentGame ?
-				<div className="row pt-2">
+				<div className="row">
 					<div className="col">
 						<RecentGame game={this.props.recentGame} playerList={this.props.playerList}/>
 					</div>

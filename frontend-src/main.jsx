@@ -16,7 +16,7 @@ import { formReducer } from "store/form.jsx"
 import { authReducer, masterAuthSaga } from "store/register.jsx"
 import redirectSaga from "store/redirect.jsx"
 import { masterLeaderboardSaga, leaderboardReducer } from "store/leaderboard.jsx"
-import { masterPartialGameSaga, partialGameReducer } from "store/partial_game.jsx"
+import { masterGameSaga } from "store/submit_game.jsx"
 import { recentGameMasterSaga, recentGameReducer} from "store/recent_game.jsx"
 import { refreshLockSaga, lockReducer } from "store/board_lock.jsx"
 
@@ -48,7 +48,6 @@ const store = createStore(
 		auth: authReducer,
 		form: formReducer,
 		leaderboard: leaderboardReducer,
-		partial_game: partialGameReducer,
 		recent_game: recentGameReducer,
 		board_lock: lockReducer,
 	}),
@@ -68,7 +67,7 @@ persistStore(store, {
 		yield fork(redirectSaga)
 		yield fork(masterLeaderboardSaga)
 		yield fork(masterAuthSaga)
-		yield fork(masterPartialGameSaga)
+		yield fork(masterGameSaga)
 		yield fork(recentGameMasterSaga)
 		yield fork(refreshLockSaga)
 	})

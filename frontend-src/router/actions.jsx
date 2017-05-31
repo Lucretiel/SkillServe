@@ -7,7 +7,7 @@ export const GO = sym("GO")
 export const LOCATION_CHANGED = sym("LOCATION_CHANGED")
 
 export const push = createAction(PUSH, (path, state) => ({path, state}))
-export const replace = createAction(REPLACE, (path, state) => ({path, state}))
+export const replace = createAction(REPLACE, ({path, state}) => ({path, state}))
 export const go = createAction(GO, steps => steps)
 export const goForward = (steps=1) => go(steps)
 export const goBack = (steps=1) => go(-steps)

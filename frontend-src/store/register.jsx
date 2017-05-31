@@ -86,7 +86,8 @@ export const selectSkill = createMaybeSelector(
 	selectAuthData.if.authenticated, ({skill}) => skill)
 
 export const selectStats = createMaybeSelector(
-	selectAuthData.if.authenticated, ({wins, losses, games}) => ({wins, losses, games}))
+	selectAuthData.if.authenticated,
+	({wins, losses, games, mu, sigma}) => ({wins, losses, games, mu, sigma}))
 
 const selectNameParts = createMaybeSelector(
 	selectPrettyName, prettyName => prettyName.split(/\s+/)

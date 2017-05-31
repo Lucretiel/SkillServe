@@ -13,7 +13,6 @@ import {Motion} from 'react-motion'
 
 import { selectPrettyName, doLogout, selectSkill } from 'store/register.jsx'
 import Leaderboard from 'components/Leaderboard.jsx'
-import Game from 'components/Game.jsx'
 import Profile from 'components/Profile.jsx'
 import {skillSpring} from 'components/util.jsx'
 import {formatSkill} from 'util.jsx'
@@ -77,7 +76,6 @@ const sigma = <i><b>σ</b></i>
 class Body extends React.PureComponent {
 	render() {
 		const pages = [
-			/*{path: '/main/game', label: 'Game'},*/
 			{path: '/main/leaderboard', label: 'Leaderboard'},
 			{path: '/main/profile', label: 'Profile'},
 			{path: '/main/about', label: 'About'},
@@ -91,9 +89,6 @@ class Body extends React.PureComponent {
 						<RouterNav pages={pages} currentPath={currentPath} prettyName={prettyName} skill={skill}/>
 					</div>
 				</div>
-				{/*<Fragment forRoute='/main/game'>
-					<Game />
-				</Fragment>*/}
 				<Fragment forRoute='/main/leaderboard'>
 					<Leaderboard/>
 				</Fragment>
