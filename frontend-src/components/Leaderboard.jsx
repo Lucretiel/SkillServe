@@ -68,19 +68,6 @@ class PlayerTable extends React.PureComponent {
 			</button>
 	)
 
-	highlight = username =>
-		this.props.replaceLoc({
-			hash: 'highlight=' + join([...this.props.highlighted, username], ',')
-		})
-
-	unHighlight = username =>
-		this.props.replaceLoc({
-			hash: 'highlight=' + join(without(this.props.highlighted, username), ',')
-		})
-
-	isHighlighted = username =>
-		includes(this.props.highlighted, username)
-
 	render() {
 		const {players, currentUsername} = this.props
 
@@ -97,13 +84,7 @@ class PlayerTable extends React.PureComponent {
 				<FlipMove duration={750} typeName="tbody">
 					{map(players, ({username, prettyName, rank, skill, quality, isProvisional}) =>
 						<tr
-							key={username} className={
-								(username === currentUsername ? 'table-warning ' : '') +
-								(includes(this.props.highlighted) ? 'table-info ' : '')}
-							onClick={this.isHighlighted(username) ?
-								() => this.unHighlight(username) :
-								() => this.highlight(username)
-							}
+							key={username} className={username === currentUsername ? 'table-warning' : ''}
 						>
 							<td>{rank}</td>
 							<td>{prettyName}</td>

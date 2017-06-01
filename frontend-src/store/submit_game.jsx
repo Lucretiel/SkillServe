@@ -39,7 +39,7 @@ const submitGameSaga = function*({winners, losers, leaderboard}) {
 
 export const masterGameSaga = function*() {
 	yield takeEvery(submitFullGame,
-		({winners, losers, leaderboard}) => submitGameSaga({winners, losers, leaderboard}))
+		({payload: {winners, losers, leaderboard}}) => submitGameSaga({winners, losers, leaderboard}))
 }
 
 // Selectors
