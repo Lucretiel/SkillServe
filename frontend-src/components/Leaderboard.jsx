@@ -6,10 +6,12 @@ import {connect} from 'react-redux'
 import {selectPlayers, refreshLeaderboard} from 'store/leaderboard.jsx'
 import {selectLeaderboard, selectUsername} from 'store/register.jsx'
 import {submitFullGame} from 'store/submit_game.jsx'
+import {selectUnlockTime, refreshLock} from 'store/board_lock.jsx'
 import {map, some as any, find, without, includes, join} from 'lodash'
 import {Motion} from 'react-motion'
 import { selectFragment } from "router/selectors.jsx"
 import { replace } from "router/actions.jsx"
+import dateFmt from 'date-fns/format'
 
 import {skillSpring} from 'components/util.jsx'
 import {formatSkill} from 'util.jsx'
@@ -30,6 +32,30 @@ const selectHighlighted = createSelector(selectFragment, fragment => {
 	const match = fragment.match(/^highlight=(([a-zA-Z0-9-_]+,)+)$/)
 	return match ? match[1].split(',') : []
 })
+
+const formattedUnlockTime = unlockTime => {
+	const date = new Date(unlockTime)
+	const now = new Date()
+
+	const distance = date - now
+	const distance_days = (distance /
+		1000 / //ms -> s
+		60 /   //s -> m
+		60 /   //m -> h
+		24   //h -> d
+	)
+
+
+	const date_pattern = (
+		distance_days < 7 ? "[on] dddd [at] h:mm A" :
+		now.getFullYear() != date.getFullYear() ? '[on] MMM D, YYYY' :
+		now.getMonth() != date.getMonth() ? '[on] MMM Do' :
+		now.getDay() != date.getDay() ? `[in ${distance_days.toFixed(0)} days]` :
+		'[at] h:mm A'
+	)
+
+	return dateFmt(date, date_pattern)
+}
 
 @connect(
 	state => ({highlighted: selectHighlighted(state)}),
@@ -114,10 +140,12 @@ class PlayerTable extends React.PureComponent {
 		players: selectPlayers(state),
 		leaderboard: selectLeaderboard(state),
 		currentUsername: selectUsername(state),
+		unlockTime: selectUnlockTime(state),
 	}),
 	dispatch => ({
 		refreshPlayers: leaderboard => dispatch(refreshLeaderboard({leaderboard})),
 		submitFullGame: ({winners, losers, leaderboard}) => dispatch(submitFullGame({winners, losers, leaderboard})),
+		refreshLock: leaderboard => dispatch(refreshLock(leaderboard))
 	}))
 class Leaderboard extends React.PureComponent {
 	static propTypes = {
@@ -125,7 +153,8 @@ class Leaderboard extends React.PureComponent {
 		leaderboard: PropTypes.string.isRequired,
 		currentUsername: PropTypes.string.isRequired,
 		refreshPlayers: PropTypes.func.isRequired,
-		submitFullGame: PropTypes.func.isRequired
+		submitFullGame: PropTypes.func.isRequired,
+		refreshLock: PropTypes.func.isRequired,
 	}
 
 	state = {
@@ -198,14 +227,26 @@ class Leaderboard extends React.PureComponent {
 		})
 	}
 
-	refreshPlayers = () => this.props.refreshPlayers(this.props.leaderboard)
+	refresh = () => {
+		this.props.refreshPlayers(this.props.leaderboard)
+		this.props.refreshLock(this.props.leaderboard)
+	}
+
+	isBoardLocked = () => this.props.unlockTime != null
 
 	componentWillMount() {
-		this.refreshPlayers()
+		this.refresh()
 	}
 
 	render() {
-		const {players, signOut, currentUsername} = this.props
+		const {players, signOut, currentUsername, unlockTime} = this.props
+
+		const boardLocked = this.isBoardLocked()
+
+		const buttonText = boardLocked ?
+			`Board unlocks ${formattedUnlockTime(this.props.unlockTime)}` :
+			"Submit Game"
+
 
 		return <div className="container-fluid pt-2 px-0">
 			<div className="row">
@@ -229,15 +270,15 @@ class Leaderboard extends React.PureComponent {
 
 			<div className="row pb=2">
 				<div className="col">
-					<button className="btn btn-primary mr-2" type="button" onClick={this.refreshPlayers}>
+					<button className="btn btn-primary mr-2" type="button" onClick={this.refresh}>
 						Refresh
 					</button>
-					{this.buttonReady() ?
-						<button className="btn btn-primary mr-2" type="button" onClick={this.submitGame}>
-							Submit Game
-						</button> :
+					{this.isBoardLocked() || !this.buttonReady() ?
 						<button className="btn btn-secondary mr-2" type="button" disabled>
-							Submit Game
+							{buttonText}
+						</button> :
+						<button className="btn btn-primary mr-2" type="button" onClick={this.submitGame}>
+							{buttonText}
 						</button>
 					}
 				</div>

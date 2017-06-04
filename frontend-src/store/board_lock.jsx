@@ -32,17 +32,15 @@ export const refreshLockSaga = function*() {
 		}
 
 		const board_data = yield response.json()
-		yield put(receiveLock({leaderboard, unlock_time: board_data.unlock_time}))
-	})
+		const unlock_time = board_data.unlock_time
+		yield put(receiveLock({leaderboard, unlock_time}))
 
-	yield takeLatest(receiveLock, function*({payload: {leaderboard, unlock_time}}) {
 		if(unlock_time === null) {
 			return
 		}
 
 		const now = new Date()
 		const unlock = new Date(unlock_time)
-
 		yield delay(unlock.getTime() - now.getTime())
 		yield put(receiveLock({leaderboard, unlock_time: null}))
 		yield put(refreshLock(leaderboard))
