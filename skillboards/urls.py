@@ -12,7 +12,6 @@ urlpatterns = [
             url(r'^(?P<username>[a-zA-Z0-9_-]+)/recent_game$', views.player_recent_game),
         ])),
         url(r'^register$', views.register),
-        url(r'^partial_game$', views.PartialGameView.as_view()),
         url(r'^full_game$', views.game),
     ])),
     url(r'^poke$', views.poke),

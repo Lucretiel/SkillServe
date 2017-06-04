@@ -45,8 +45,6 @@ class BoardSerializer(serializers.ModelSerializer):
             "tau",
             "draw_probability",
 
-            "partial_game_id",
-
             "unlock_time",
         ]
 
@@ -81,42 +79,3 @@ class GameSerializer(serializers.Serializer):
         source="teams.all"
     )
     time = serializers.DateTimeField(allow_null=True, required=False, default=None)
-
-
-class PartialGamePlayerSerializer(serializers.ModelSerializer):
-    player = serializers.SlugField(
-        source="player.username")
-
-    class Meta:
-        model = models.PartialGamePlayer
-        fields = [
-            "player",
-            "winner",
-        ]
-
-
-class PartialGameSerializer(serializers.ModelSerializer):
-    players = serializers.ListField(
-        child=PartialGamePlayerSerializer(),
-        source="player_info.all",
-        read_only=True)
-    game_type = serializers.SlugField(
-        source="get_game_type_display")
-    fingerprint = serializers.IntegerField(
-        read_only=True)
-
-    class Meta:
-        model = models.PartialGame
-        fields = [
-            "game_type",
-            "players",
-            "id",
-            "fingerprint"
-        ]
-
-
-class PartialGameRequestSerializer(serializers.Serializer):
-    username = serializers.SlugField()
-    winner = serializers.BooleanField()
-    game_type = serializers.ChoiceField(['solo', 'team'])
-    partial_game_id = serializers.IntegerField(allow_null=True)

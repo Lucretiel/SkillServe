@@ -47,15 +47,3 @@ class GameAdmin(NestedModelAdmin):
     inlines = [GameTeamInline]
     list_filter = ['board']
     ordering = ['-time']
-
-
-# Partial game models
-class PartialGamePlayerInline(admin.TabularInline):
-    model = models.PartialGamePlayer
-    extra = 0
-
-
-@admin.register(models.PartialGame)
-class PartialGameAdmin(admin.ModelAdmin):
-    inlines = [PartialGamePlayerInline]
-    list_filter = ['board']

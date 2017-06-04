@@ -46,14 +46,6 @@ class Board(models.Model):
         except BoardLock.DoesNotExist:
             return None
 
-    @property
-    def partial_game_id(self):
-        '''This should only be used for serialization'''
-        try:
-            return PartialGame.objects.get(board=self).id
-        except PartialGame.DoesNotExist:
-            return None
-
 
 class BoardLock(models.Model):
     board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name='locks')
@@ -279,61 +271,3 @@ class GameTeamPlayer(models.Model):
 
     class Meta:
         unique_together = index_together = ('team', 'player')
-
-
-# Crokinole Specific
-class PartialGame(models.Model):
-    SOLO = 1
-    TEAM = 2
-    GAME_TYPE_CHOICES = (
-        (SOLO, "solo"),
-        (TEAM, "team"),
-    )
-
-    board = models.OneToOneField(Board, on_delete=models.CASCADE)
-    game_type = models.SmallIntegerField(choices=GAME_TYPE_CHOICES)
-    time = models.DateTimeField(auto_now_add=True)
-
-    class NonFullGame(Exception):
-        pass
-
-    def is_ready(self):
-        self.full_clean()
-
-        max_category = 1 if self.game_type is PartialGame.SOLO else 2
-
-        for winner in True, False:
-            if self.player_info.filter(winner=winner).count() != max_category:
-                return False
-
-        return True
-
-    def fingerprint(self):
-        return hash((
-            self.board.name,
-            self.get_game_type_display(),
-            frozenset(
-                (player.player.username, player.winner) for player in self.player_info.all()
-            )
-        ))
-
-    def create_game(self):
-        def emit_players(winner):
-            for gplayer in self.player_info.select_related('player').filter(winner=winner):
-                yield gplayer.player, 1
-
-        def emit_teams():
-            for winner in True, False:
-                rank = 0 if winner else 1
-                yield rank, emit_players(winner)
-
-        Game.create_game(board=self.board, teams=emit_teams())
-
-
-class PartialGamePlayer(models.Model):
-    game = models.ForeignKey(PartialGame, on_delete=models.CASCADE, related_name="player_info")
-    player = models.ForeignKey(Player, on_delete=models.PROTECT)
-    winner = models.BooleanField()
-
-    class Meta:
-        unique_together = index_together = ("game", "player")

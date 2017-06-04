@@ -1,22 +1,16 @@
-from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from skillboards.models import Board
 from skillboards.models import Game
 from skillboards.models import GameTeamPlayer
-from skillboards.models import PartialGame
-from skillboards.models import PartialGamePlayer
 from skillboards.models import Player
 from skillboards.serializers import BoardSerializer
 from skillboards.serializers import GameSerializer
-from skillboards.serializers import PartialGameRequestSerializer
-from skillboards.serializers import PartialGameSerializer
 from skillboards.serializers import PlayerRegisterSerializer
 from skillboards.serializers import PlayerSerializer
 
@@ -136,6 +130,7 @@ def register(request, board_name):
     return Response(player_serializer.data, status=code)
 
 
+# TODO: add board locks
 @api_view(["POST"])
 @transaction.atomic
 def game(request, board_name):
@@ -159,141 +154,3 @@ def game(request, board_name):
     Game.create_game(board=board, teams=teams, time=request_data['time'])
 
     return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class PartialGameView(APIView):
-    @staticmethod
-    def serialized_game(game):
-        serializer = PartialGameSerializer(game)
-        return Response(data=serializer.data)
-
-    def get(self, request, board_name):
-        board = get_object_or_404(Board, name=board_name)
-        try:
-            game = PartialGame.objects.get(board=board)
-        except PartialGame.DoesNotExist:
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        else:
-            return self.serialized_game(game)
-
-    @transaction.atomic
-    def post(self, request, board_name):
-        partial_game_serializer = PartialGameRequestSerializer(data=request.data)
-        if not partial_game_serializer.is_valid():
-            return Response(partial_game_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        request_data = partial_game_serializer.data
-        partial_game_id = request_data['partial_game_id']
-        game_type = PartialGame.SOLO if request_data['game_type'] == 'solo' else PartialGame.TEAM
-        winner = request_data['winner']
-        username = request_data['username']
-
-        # Check that the board exists
-        try:
-            board = Board.objects.select_related('partialgame').get(name=board_name)
-        except Board.DoesNotExist:
-            return Response({
-                "error": "No such board",
-                "board": board_name
-            }, status=status.HTTP_404_NOT_FOUND)
-
-        # Check that the board is not locked
-        unlock_time = board.unlock_time()
-        if unlock_time is not None:
-            return Response({
-                "error": "The board is currently locked",
-                "board": board_name,
-                "unlock_time": unlock_time
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-        # Check that the username exists
-        try:
-            player = board.players.get(username=username)
-        except Player.DoesNotExist:
-            return Response({
-                "error": "No such username",
-                "username": username
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-        if partial_game_id is None:
-            # Check that game isn't in progress
-            try:
-                game = board.partialgame
-            except ObjectDoesNotExist:
-                pass
-            else:
-                return Response({
-                    "error": "PartialGame already in progress",
-                    "id": game.id,
-                }, status=status.HTTP_400_BAD_REQUEST)
-
-            with transaction.atomic():
-                game = PartialGame(board=board, game_type=game_type)
-                game.full_clean()
-                game.save()
-
-                gamePlayer = PartialGamePlayer(game=game, player=player, winner=winner)
-                gamePlayer.full_clean()
-                gamePlayer.save()
-
-            return self.serialized_game(game)
-        else:
-            try:
-                game = board.partialgame
-            except ObjectDoesNotExist:
-                return Response({
-                    "error": "no partial game in progress",
-                }, status=status.HTTP_400_BAD_REQUEST)
-
-            if game.id != partial_game_id:
-                # TODO: cheat
-                return Response({
-                    "error": "partial game in progress doesn't match given game id",
-                    "id": game.id
-                }, status=status.HTTP_400_BAD_REQUEST)
-
-            if game.game_type != game_type:
-                return Response({
-                    "error": "partial game in progress is a different type than given"
-                }, status=status.HTTP_400_BAD_REQUEST)
-
-            if game.player_info.filter(player=player).exists():
-                return Response({
-                    "error": "This player is already associated with this game"
-                }, status=status.HTTP_400_BAD_REQUEST)
-
-            max_category = 1 if game_type is PartialGame.SOLO else 2
-            count = game.player_info.filter(winner=winner).count()
-
-            if count == max_category:
-                return Response({
-                    "error": "This partial has maxed out that type of player",
-                    "winner": winner,
-                    "count": count
-                }, status=status.HTTP_400_BAD_REQUEST)
-            elif count > max_category:
-                return Response({
-                    "error": "There are too many players of this type. This is a server error.",
-                    "winner": winner,
-                    "count": count,
-                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-            with transaction.atomic():
-                gamePlayer = PartialGamePlayer(game=game, player=player, winner=winner)
-                gamePlayer.full_clean()
-                gamePlayer.save()
-
-            # Attempt to process
-            if not game.is_ready():
-                # TODO: response
-                return self.serialized_game(game)
-
-            # TODO: response
-            game.create_game()
-            game.delete()
-            return Response({})
-
-    def delete(self, request, board_name):
-        partial_game = get_object_or_404(PartialGame, board=board_name)
-        partial_game.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
