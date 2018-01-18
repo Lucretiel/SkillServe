@@ -20,3 +20,6 @@ Things on this list are sorted by when I thought of them
 - Make signing in / account creation not stupid
 - Partial rewrite– use django templates, authentication
 - Kill redux
+- Kill the stupid authentication layer in the frontend
+- If possible, reduce the react app to just be after login
+    - Why even bother with login? Just distribute the board key and be done with it
