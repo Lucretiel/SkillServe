@@ -23,3 +23,4 @@ Things on this list are sorted by when I thought of them
 - Kill the stupid authentication layer in the frontend
 - If possible, reduce the react app to just be after login
     - Why even bother with login? Just distribute the board key and be done with it
+- Separate 2v2 and 1v1 leaderboards

@@ -15,12 +15,12 @@ module.exports = {
 	],
 	output: {
 		path: dir("frontend-dist"),
-		filename: 'bundle.js'
+		filename: 'bundle.js',
 	},
 	resolve: {
 		modules: [
 			dir("frontend-src"),
-			"node_modules"
+			"node_modules",
 		],
 	},
 	plugins: [

@@ -22,16 +22,21 @@ import { refreshLockSaga, lockReducer } from "store/board_lock.jsx"
 
 import { reducer as routerReducer, createMiddleware as createRouterMiddleware } from "router"
 
+// Custom middleware applicator that queues events produced during middleware
+// installation, and executes them after all middlewares are
+// installed
 const customApplyMiddleware = (...middlewares) => createStore => (reducer, preloadedState, enhancer) => {
 	const store = createStore(reducer, preloadedState, enhancer)
 	const actionQueue = []
 	let dispatch = action => actionQueue.push(action)
 
 	const middlewareApi = {
-		getState: store.getState,
-		dispatch: action => dispatch(action)
+		getState: () => store.getState(),
+		dispatch: action => dispatch(action),
 	}
+
 	dispatch = compose(...middlewares.filter(m => m !== null).map(m => m(middlewareApi)))(store.dispatch)
+
 	actionQueue.forEach(action => dispatch(action))
 	return {
 		...store,

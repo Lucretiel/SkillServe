@@ -26,7 +26,7 @@ def convert_bool(value, default=False):
         'no': False, 'yes': True,
         'off': False, 'on': True,
         '0': False, '1': True,
-    }[value.lower()]
+    }[value.strip().lower()]
 
 
 def environ_get_bool(key, *, default):
@@ -61,6 +61,7 @@ INSTALLED_APPS = [
 
     'nested_inline',
     'rest_framework',
+    'graphene_django',
 
     'skillboards.apps.SkillboardsConfig',
     'skillstatic.apps.SkillstaticConfig',
@@ -145,9 +146,9 @@ USE_L10N = True
 
 USE_TZ = True
 
-SECURE_SSL_REDIRECT = environ_get_bool('REDIRECT_SSL', default=False)
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
+SECURE_SSL_REDIRECT = environ_get_bool('REDIRECT_SSL', default=not DEBUG)
+CSRF_COOKIE_SECURE = environ_get_bool('SECURE_COOKIES', default=not DEBUG)
+SESSION_COOKIE_SECURE = environ_get_bool('SECURE_COOKIES', default=not DEBUG)
 CONN_MAX_AGE = 60
 
 

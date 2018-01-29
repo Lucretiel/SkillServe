@@ -93,6 +93,7 @@ env/
 # Sublime stuff
 *.sublime-project
 *.sublime-workspace
+.anaconda
 
 ########################
 # NODE.JS

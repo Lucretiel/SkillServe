@@ -14,31 +14,9 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 
-from logging_tree.format import build_description
-
 from django.conf.urls import include
 from django.conf.urls import url
 from django.contrib import admin
-
-from rest_framework import renderers
-from rest_framework.decorators import api_view
-from rest_framework.decorators import renderer_classes
-from rest_framework.response import Response
-
-
-class PlainTextRenderer(renderers.BaseRenderer):
-    media_type = 'text/plain'
-    format = 'txt'
-
-    def render(self, data, media_type=None, renderer_context=None):
-        return data.encode(self.charset)
-
-
-@api_view()
-@renderer_classes((PlainTextRenderer,))
-def log_tree(request):
-    return Response(build_description())
-
 
 urlpatterns = [
     url(r'^api/', include('skillboards.urls')),

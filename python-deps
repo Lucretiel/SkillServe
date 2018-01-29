@@ -1,0 +1,12 @@
+Django
+django-nested-inline
+djangorestframework
+gunicorn
+ipython
+whitenoise
+psycopg2
+dj-database-url
+trueskill
+scipy
+graphene
+graphene-django

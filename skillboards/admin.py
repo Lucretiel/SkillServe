@@ -14,19 +14,21 @@ class LockInline(admin.TabularInline):
 class BoardAdmin(admin.ModelAdmin):
     inlines = [LockInline]
 
+    def recalculate_skills(self, request, queryset):
+        for board in queryset:
+            models.update_all_rankings(board)
+
+    recalculate_skills.description = "Recalculate all skills"
+
+    actions = [recalculate_skills]
+
 
 @admin.register(models.Player)
 class PlayerAdmin(admin.ModelAdmin):
-    def get_queryset(self, request):
-        return super().get_queryset(request).with_player_info()
-
     def skill(self, instance):
         return instance.skill
 
-    def is_provisional(self, instance):
-        return instance.is_provisional
-
-    readonly_fields = ('skill', 'is_provisional')
+    readonly_fields = ['skill']
     list_filter = ['board']
 
 
@@ -45,5 +47,5 @@ class GameTeamInline(NestedStackedInline):
 @admin.register(models.Game)
 class GameAdmin(NestedModelAdmin):
     inlines = [GameTeamInline]
-    list_filter = ['board']
+    list_filter = ['board', 'teams__players__player']
     ordering = ['-time']
