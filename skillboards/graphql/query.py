@@ -1,5 +1,3 @@
-from django.db.models import Prefetch
-
 import functools
 import graphene
 import graphene.types.datetime as graphene_dt
