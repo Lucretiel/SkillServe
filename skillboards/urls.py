@@ -1,8 +1,10 @@
-from django.conf.urls import url
+from django.urls import path
 
-from graphene_django.views import GraphQLView
 from skillboards.graphql import schema
+from skillboards import views
 
 urlpatterns = [
-    url('graphql', GraphQLView.as_view(graphiql=True, schema=schema.schema))
+	path('', views.index, name="index"),
+	path('about/', views.about_page, name='about_page'),
+	path('graphql/', schema.view, name="graphql"),
 ]

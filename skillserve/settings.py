@@ -19,7 +19,7 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.dirname(PROJECT_ROOT)
 
 
-def convert_bool(value, default=False):
+def convert_bool(value, default):
     return value if isinstance(value, bool) else {
         '': default,
         'false': False, 'true': True,
@@ -166,3 +166,7 @@ WEBPACK_OUTPUT_DIR = os.environ.get(
 STATICFILES_DIRS = [
     WEBPACK_OUTPUT_DIR
 ]
+
+# GraphQL
+
+ENABLE_GRAPHIQL = environ_get_bool("ENABLE_GRAPHIQL", default=DEBUG)
