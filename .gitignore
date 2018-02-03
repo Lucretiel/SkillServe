@@ -139,3 +139,6 @@ jspm_packages
 
 # webpack
 frontend-dist
+
+# OSX
+.DS_Store

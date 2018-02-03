@@ -21,43 +21,43 @@
 
 		<!-- LOCAL STUFF -->
 		<link rel="stylesheet" href="{% static "skillboards/style.css" %}">
+		{% block bundle %}{% endblock %}
 
 	</head>
 	<body>
 		<div id="page-container">
 			<header>
-				<nav class="navbar navbar-expand-sm navbar-light bg-light">
-					<div class="container">
-						<a class="navbar-brand" href="{% url "index" %}">
-							<img src="{% static "skillboards/crokinole-logo.svg" %}" width=32 height="32" class="d-inline-block align-top">
-						</a>
-						{% block header-elements %}{%endblock%}
-					</div>
-				</nav>
+				{% block header %}
+					<nav class="navbar navbar-expand-sm navbar-light">
+						<div class="container">
+							<a class="navbar-brand" href="{% url "index" %}">
+								<img src="{% static "skillboards/crokinole-logo.svg" %}" width="30" height="30" class="d-inline-block align-top"> Crokinole Ladder <small class="text-muted">Beach Week 2018</small>
+							</a>
+						</div>
+					</nav>
+				{% endblock %}
 			</header>
 			<main>{% block main %}MAIN{% endblock %}</main>
 			<footer>
-				{% block footer %}
-					<div class="container">
-						<div class="row">
-							<div class="col d-flex justify-content-end">
-								<span class="footer-item">
-									<a href="{% url "about_page" %}">About</a>
-								</span>
-								<span class="footer-item">
-									<a href="https://paper.dropbox.com/doc/Beach-Week-Crokinole-Rules-JhpiBUr8YFZ2aVtZcEwH0" target="_blank">
-										Rules
-									</a>
-								</span>
-								<span class="footer-item">
-									<a href="https://github.com/Lucretiel/SkillServe" target="_blank">
-										Github
-									</a>
-								</span>
-							</div>
+				<div class="container">
+					<div class="row">
+						<div class="col d-flex justify-content-end">
+							<span class="footer-item">
+								<a href="{% url "about_page" %}">About</a>
+							</span>
+							<span class="footer-item">
+								<a href="https://paper.dropbox.com/doc/Beach-Week-Crokinole-Rules-JhpiBUr8YFZ2aVtZcEwH0" target="_blank">
+									Rules
+								</a>
+							</span>
+							<span class="footer-item">
+								<a href="https://github.com/Lucretiel/SkillServe" target="_blank">
+									Github
+								</a>
+							</span>
 						</div>
 					</div>
-				{% endblock %}
+				</div>
 			</footer>
 		</div>
 	</body>

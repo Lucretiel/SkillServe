@@ -3,10 +3,7 @@ import trueskill
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db import transaction
-from django.db.models import Case
-from django.db.models import F
 from django.db.models import Q
-from django.db.models import When
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
 from django.utils import timezone

@@ -1,0 +1,43 @@
+{% extends "skillboards/base.html" %}
+
+{% load static %}
+{% load widget_tweaks %}
+
+{% block header %}
+	<div class="container">
+		<div class="row select-header">
+			<div class="col">
+				<h1 class="text-center">
+					<img src="{% static "skillboards/crokinole-logo.svg" %}" class="d-inline-block align-top" height="40">
+					<br class="d-md-none" /> Crokinole Ladder
+					<br class="d-md-none" /> <small class="text-muted">Beach Week 2018</small>
+				</h1>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+{% block main %}
+	<div class="container">
+		<div class="row justify-content-center">
+			<div class="col col-md-8">
+				<form action={% url "select-board" %} method="post">
+					{% csrf_token %}
+					<div class=form-group>
+						{{ form.name.label_tag }}
+						{{ form.name | add_class:"form-control" | add_error_class:"is-invalid"}}
+						<small class="form-text text-muted">
+							If you don't know the Leaderboard Code, ask Nathan.
+						</small>
+						{% for error in form.name.errors %}
+							<div class="invalid-feedback">
+								{{ error | escape }}
+							</div>
+						{% endfor %}
+					</div>
+					<button type="submit" class="btn btn-primary">Sign in</button>
+				</form>
+			</div>
+		</div>
+	</div>
+{% endblock %}

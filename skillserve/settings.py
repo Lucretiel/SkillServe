@@ -60,11 +60,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'nested_inline',
-    'rest_framework',
     'graphene_django',
+    'widget_tweaks',
 
     'skillboards.apps.SkillboardsConfig',
-    'skillstatic.apps.SkillstaticConfig',
 ]
 
 MIDDLEWARE = [

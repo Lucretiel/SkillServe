@@ -1,3 +1,5 @@
+import re
+
 import graphene
 
 from skillboards import models
@@ -8,6 +10,13 @@ class PlayerExistsError(Exception):
 	pass
 
 
+class InvalidUsernameError(Exception):
+	pass
+
+
+slug_pattern = re.compile(r'^[a-zA-Z0-9_-]+$')
+
+
 class CreatePlayer(graphene.Mutation):
 	class Arguments:
 		name = graphene.String(required=True)
@@ -15,15 +24,15 @@ class CreatePlayer(graphene.Mutation):
 
 	Output = query.Player
 
-	def mutate(root, info, board_name, player_name):
+	def mutate(root, info, board_name, name):
 		board = models.Board.objects.only('mu', 'sigma').get(board_name)
-		player_query = models.Player.objects.filter(board=board, name=player_name)
+		player_query = models.Player.objects.filter(board=board, name=name)
 		if player_query.count() > 0:
-			msg = f"Player with name '{player_name}' in board '{board_name}' already exists"
+			msg = f"Player with name '{name}' in board '{board_name}' already exists"
 			raise PlayerExistsError(msg)
 
 		player = models.Player.create(
-			name=player_name,
+			name=name,
 			board=board
 		)
 		player.full_clean()

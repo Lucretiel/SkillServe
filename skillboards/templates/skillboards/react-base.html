@@ -1,0 +1,11 @@
+{% extends "skillboards/base.html" %}
+
+{% load static %}
+
+{% block bundle %}
+	<script src="{% static "webpack/bundle.js" %}" defer></script>
+{% endblock %}
+
+{% block main %}
+	<div id="react-root"></div>
+{% endblock %}
