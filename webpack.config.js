@@ -1,71 +1,51 @@
-const webpack = require('webpack')
 const path = require('path')
-const LodashModuleReplacementPlugin = require('lodash-webpack-plugin');
-const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
+const LodashModuleReplacementPlugin = require('lodash-webpack-plugin')
 
 const dir = local => path.resolve(__dirname, local)
 const isProd = process.env.NODE_ENV === 'production'
+const ifProd = thing => isProd ? thing : null
+const filtered = array => array.filter(el => el)
 
 module.exports = {
-	context: dir("frontend-src"),
-	entry: [
-		...(isProd ? ['babel-polyfill'] : []),
+	context: dir("frontend2"),
+	entry: filtered([
+		ifProd('babel-polyfill'),
+		ifProd('whatwg-fetch'),
 		'main.jsx',
-		'style.scss',
-	],
+	]),
 	output: {
-		path: dir("frontend-dist"),
+		path: dir("frontend-dist/webpack"),
 		filename: 'bundle.js',
 	},
 	resolve: {
 		modules: [
-			dir("frontend-src"),
+			dir("frontend2"),
 			"node_modules",
 		],
 	},
 	plugins: [
-		/*new BundleAnalyzerPlugin(),*/
-		new LodashModuleReplacementPlugin({
-			shorthands: true,
-			collections: true,
-		}),
+		new LodashModuleReplacementPlugin(),
 	],
 	module: {
-		rules: [
+		rules: [{
 			// Babelify everything
-			{
-				test: /\.jsx?$/,
-				exclude: dir('node_modules'),
-				use: [{
-					loader: 'babel-loader',
-					options: {
-						presets: [
-							'react',
-							['env', {
-								exclude: isProd ? [] : ['transform-regenerator'],
-								modules: false,
-							}],
-						],
-						plugins: [
-							'lodash',
-							"transform-decorators-legacy",
-							"transform-class-properties",
-							"transform-object-rest-spread",
-						],
-					},
-				}],
-			}, {
-				test: /\.scss$/,
-				exclude: dir('node_modules'),
-				use: [
-					"style-loader",
-					"css-loader",
-					"sass-loader",
-				]
-			}
-		],
-	},
-	devServer: {
-		historyApiFallback: true,
+			test: /\.jsx?$/,
+			exclude: dir('node_modules'),
+			use: [{
+				loader: 'babel-loader',
+				options: {
+					presets: [
+						'react',
+						'env',
+					],
+					plugins: [
+						'lodash',
+						"transform-class-properties",
+						"transform-object-rest-spread",
+						"transform-strict-mode",
+					],
+				},
+			}],
+		}],
 	},
 }

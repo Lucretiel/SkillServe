@@ -1,7 +1,7 @@
 {% load static %}
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="stretch">
 	<head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,6 +11,8 @@
 				Beach Week {% now "Y" %} Crokinole Leaderboard
 			{% endblock %}
 		</title>
+
+		<link rel="icon" href="{% static "favicon.png" %}">
 
 		<!-- BOOTSTRAP STUFF -->
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
@@ -24,8 +26,8 @@
 		{% block bundle %}{% endblock %}
 
 	</head>
-	<body>
-		<div id="page-container">
+	<body class="stretch">
+		<div class="stretch-container">
 			<header>
 				{% block header %}
 					<nav class="navbar navbar-expand-sm navbar-light">
@@ -37,7 +39,7 @@
 					</nav>
 				{% endblock %}
 			</header>
-			<main>{% block main %}MAIN{% endblock %}</main>
+			<main class="stretch-main">{% block main %}{% endblock %}</main>
 			<footer>
 				<div class="container">
 					<div class="row">
@@ -55,6 +57,16 @@
 									Github
 								</a>
 							</span>
+							{% comment %}
+							{% if request.session.selected_board %}
+								<span class="footer-item">
+									<form action="{% url "logout" %}" method="post">
+										{% csrf_token %}
+										<button type="submit" name="logout-button" class="btn btn-danger">Logout</button>
+									</form>
+								</span>
+							{% endif %}
+							{% endcomment %}
 						</div>
 					</div>
 				</div>

@@ -1,5 +1,7 @@
 from django.shortcuts import redirect
 from django.views import generic
+from django.urls import reverse_lazy
+from django.views.decorators.http import require_POST
 
 from skillboards import forms, models
 
@@ -21,9 +23,10 @@ class SelectBoard(generic.FormView):
 	template_name = "skillboards/select-board.html"
 	form_class = forms.SelectBoard
 
+	success_url = reverse_lazy('index')
+
 	def form_valid(self, form):
-		board_name = form.cleaned_data['name']
-		self.request.session['selected_board'] = board_name
+		board_name = self.request.session['selected_board'] = form.cleaned_data['name']
 		return redirect('leaderboard', board_name=board_name)
 
 	def form_invalid(self, form):
@@ -35,17 +38,26 @@ class SelectBoard(generic.FormView):
 	# TODO: Make a django PR that adds a step to add a status code to form_invalid
 
 
-def leaderboard(request, board_name):
-	pass
+class Leaderboard(generic.DetailView):
+	model = models.Board
+	template_name = "skillboards/leaderboard.html"
+
+	slug_field = "name"
+	slug_url_kwarg = "board_name"
 
 
 class Profile(generic.DetailView):
 	model = models.Player
 	template_name = 'skillboards/profile.html'
-	http_method_names = ['get']
 
 	slug_field = 'board__name'
 	slug_url_kwarg = 'board_name'
 	pk_url_kwarg = 'user_id'
 
 	query_pk_and_slug = True
+
+
+@require_POST
+def logout(request):
+	request.session.pop('selected_board', None)
+	return redirect("index")
