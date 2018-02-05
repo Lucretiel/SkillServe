@@ -38,3 +38,23 @@ footer {
 .test {
 	margin-top: auto
 }
+
+#react-load-placeholder {
+	margin-top: 48pt;
+}
+
+.logout-button {
+	width: 8em;
+	transition: 1s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.logout-button-elevated {
+	width: 12em;
+	transition: 1s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+table td {
+	vertical-align: center;
+}
+
+

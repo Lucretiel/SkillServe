@@ -57,16 +57,6 @@
 									Github
 								</a>
 							</span>
-							{% comment %}
-							{% if request.session.selected_board %}
-								<span class="footer-item">
-									<form action="{% url "logout" %}" method="post">
-										{% csrf_token %}
-										<button type="submit" name="logout-button" class="btn btn-danger">Logout</button>
-									</form>
-								</span>
-							{% endif %}
-							{% endcomment %}
 						</div>
 					</div>
 				</div>

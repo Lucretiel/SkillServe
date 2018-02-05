@@ -25,7 +25,7 @@ class CreatePlayer(graphene.Mutation):
 	Output = query.Player
 
 	def mutate(root, info, board_name, name):
-		board = models.Board.objects.only('mu', 'sigma').get(board_name)
+		board = models.Board.objects.only('mu', 'sigma').get(name=board_name)
 		player_query = models.Player.objects.filter(board=board, name=name)
 		if player_query.count() > 0:
 			msg = f"Player with name '{name}' in board '{board_name}' already exists"

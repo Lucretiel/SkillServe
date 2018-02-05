@@ -12,5 +12,5 @@ urlpatterns = [
 	     views.Profile.as_view(), name='profile'),
 	path('about/', views.About.as_view(), name='about_page'),
 	path('logout/', views.logout, name='logout'),
-	path('graphql/', schema.view, name="graphql"),
+	path('graphql', schema.view, name="graphql"),
 ]

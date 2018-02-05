@@ -75,7 +75,7 @@ class Player(graphene.ObjectType):
 
 
 class Game(graphene.ObjectType):
-	boad = graphene.Field(Board)
+	board = graphene.Field(Board)
 	time = graphene_dt.DateTime()
 
 	teams = graphene.List(lambda: GameTeam)
