@@ -1,8 +1,11 @@
-import { map, pickBy, mapValues, isFunction, merge } from 'lodash'
+import { map, pickBy, mapValues, isFunction, isPlainObject, merge } from 'lodash'
 
 const whitespace = /\s+/mg
 
-const objAppy = object => input => mapValues(object, value => isFunction(value) ? value(input) : value)
+const objAppy = object => {
+	const semiFlattened = mapValues(object, child => isPlainObject(child) ? objAppy(child) : child)
+	return value => mapValues(semiFlattened, child => isFunction(child) ? child(value) : child)
+}
 
 const baseOptions = {
 	headers: {
