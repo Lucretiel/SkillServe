@@ -7,14 +7,10 @@ const objAppy = object => {
 	return value => mapValues(semiFlattened, child => isFunction(child) ? child(value) : child)
 }
 
-const baseOptions = {
-	headers: {
-		"Accept": "application/json",
-	}
-}
+const baseOptions =
 
 const graphqlCall = options => {
-	const mergeQuery = objAppy(merge({}, baseOptions, options))
+	const mergeQuery = objAppy(merge({headers: {"Accept": "application/json"}}, options))
 	return query => {
 		const mergeVariables = objAppy(mergeQuery(query.trim().replace(whitespace, ' ')))
 		return variables => {
