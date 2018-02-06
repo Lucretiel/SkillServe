@@ -1,8 +1,8 @@
 import React from 'react'
 import { BrowserRouter as Router, Route } from 'react-router-dom'
 
-import Leaderboard from 'components/leaderboard/App.jsx'
-import Profile from 'components/profile/App.jsx'
+import Leaderboard from 'components/Leaderboard.jsx'
+import Profile from 'components/Profile.jsx'
 import LogoutButton from 'components/LogoutButton.jsx'
 
 export default class App extends React.PureComponent {
