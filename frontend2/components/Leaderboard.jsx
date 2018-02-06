@@ -139,6 +139,7 @@ export default class Leaderboard extends React.PureComponent {
 		const tempId = `temp-${idMaker()}`
 
 		this.setState(prevState => ({
+			newPlayer: false,
 			tempPlayers: prevState.tempPlayers.push(new Player({
 				name: playerName,
 				id: tempId,
@@ -221,10 +222,7 @@ export default class Leaderboard extends React.PureComponent {
 							{this.state.newPlayer ?
 								<CreatePlayerRow
 									cancel={() => this.setState({newPlayer: false})}
-									submit={playerName => {
-										this.createPlayer(playerName)
-										this.setState({newPlayer: false})
-									}}
+									submit={this.createPlayer}
 								/> : null
 							}
 						</tbody>
