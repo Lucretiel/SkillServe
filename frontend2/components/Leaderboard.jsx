@@ -5,6 +5,7 @@ import { Record, List } from 'immutable'
 import { isArray, isNil } from 'lodash'
 
 import { withUrl } from 'util/graphql.jsx'
+import teamSelectController from 'util/teamSelectController.jsx'
 
 const { query: graphQuery, mutate: graphMutate } = withUrl('/graphql')
 
@@ -111,6 +112,14 @@ const idMaker = (() => {
 	let id = 0
 	return () => (id = (id === 50 ? 0 : id + 1))
 })()
+
+/**
+ * Algorithm for cycling buttons:
+ * - Determine state of the world, ignoring local button
+ * - Determine ideal sequence for local button
+ * - Determine current location in sequence
+ * - Advance to next step in sequence
+ */
 
 export default class Leaderboard extends React.PureComponent {
 	static propTypes = {

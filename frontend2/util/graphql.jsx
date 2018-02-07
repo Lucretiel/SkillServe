@@ -1,21 +1,29 @@
-import { map, mapValues, isFunction, isPlainObject, merge, memoize } from 'lodash'
+import {
+	clone,
+	forEach,
+	isEmpty,
+	isFunction,
+	isPlainObject,
+	map,
+	mapValues,
+	memoize,
+	merge,
+	some,
+} from 'lodash'
 
-const objAppy = object => {
-	const semiFlattened = mapValues(object, child => isPlainObject(child) ? objAppy(child) : child)
-	return value => mapValues(semiFlattened, child => isFunction(child) ? child(value) : child)
-}
+const objApply = object => input => mapValues(object, child => isFunction(child) ? child(input) : child)
 
 const whitespace = /\s+/mg
 const minifyQuery = memoize(query => query.trim().replace(whitespace, ' '))
 
 const graphqlCall = options => {
-	const mergeUrl = objAppy(merge({headers: {"Accept": "application/json"}}, options))
+	const mergeUrl = objApply(merge({headers: {"Accept": "application/json"}}, options))
 
 	return memoize(url => {
-		const mergeQuery = objAppy(mergeUrl(url))
+		const mergeQuery = objApply(mergeUrl(url))
 
 		return memoize(query => {
-			const mergeVariables = objAppy(mergeQuery(minifyQuery(query)))
+			const mergeVariables = objApply(mergeQuery(minifyQuery(query)))
 
 			return variables => {
 				const {url, ...fetchOptions} = mergeVariables(variables)
