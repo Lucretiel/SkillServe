@@ -7,6 +7,7 @@ from django.db.models import Q
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
 from django.utils import timezone
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 from skillboards import calculations as calc
 
@@ -19,6 +20,16 @@ class Board(models.Model):
 	beta = models.FloatField(default=trueskill.BETA)
 	tau = models.FloatField(default=trueskill.TAU)
 	draw_probability = models.FloatField(default=trueskill.DRAW_PROBABILITY)
+
+	max_teams = models.PositiveIntegerField(
+		validators=[MinValueValidator(2)],
+		default=2
+	)
+
+	max_players = models.PositiveIntegerField(
+		validators=[MinValueValidator(1)],
+		default=2
+	)
 
 	def __str__(self):
 		return self.name
@@ -194,7 +205,9 @@ class GameTeamPlayer(models.Model):
 	team = models.ForeignKey(GameTeam, on_delete=models.CASCADE, related_name='players')
 	player = models.ForeignKey(Player, on_delete=models.PROTECT)
 	weight = models.FloatField(
-		validators=[validate_weight], default=1)
+		validators=[MinValueValidator(0), MaxValueValidator(1)],
+		default=1
+	)
 
 	# TODO: do this as an annotation instead of a property. In the meantime,
 	# be sure to select_related when querying GameTeamPlayer

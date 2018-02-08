@@ -10,7 +10,6 @@ module.exports = {
 	context: dir("frontend2"),
 	entry: filtered([
 		ifProd('babel-polyfill'),
-		ifProd('whatwg-fetch'),
 		'main.jsx',
 	]),
 	output: {

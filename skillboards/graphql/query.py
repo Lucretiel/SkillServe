@@ -24,6 +24,10 @@ class Board(graphene.ObjectType):
 	games = graphene.List(lambda: Game)
 	player = graphene.Field(lambda: Player, id=graphene.Int())
 
+	max_players = graphene.Int()
+	max_teams = graphene.Int()
+	can_tie = graphene.Boolean()
+
 	def resolve_players(root, info):
 		return root.players.all()
 
@@ -37,6 +41,9 @@ class Board(graphene.ObjectType):
 			.prefetch_related('gameteamplayer_set__team__game__teams__players__player')
 			.get(id=id)
 		)
+
+	def resolve_can_tie(root, info):
+		return root.draw_probability > 0
 
 
 class Rating(graphene.ObjectType):

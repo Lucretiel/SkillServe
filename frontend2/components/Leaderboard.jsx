@@ -1,17 +1,21 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import { Link } from 'react-router-dom'
 
-import { Record, List } from 'immutable'
-import { isArray, isNil } from 'lodash'
+import { Record, List, Map, Seq } from 'immutable'
+import { isArray, isNil, debounce } from 'lodash'
 
 import { withUrl } from 'util/graphql.jsx'
 import teamSelectController from 'util/teamSelectController.jsx'
 
 const { query: graphQuery, mutate: graphMutate } = withUrl('/graphql')
 
-const getPlayers = graphQuery(`
+const getBoardAndPlayers = graphQuery(`
 	query($boardName:String!) {
 		board(name:$boardName) {
+			maxPlayers
+			maxTeams
+			canTie
 			players { id name rating { skill } }
 		}
 	}
@@ -113,17 +117,26 @@ const idMaker = (() => {
 	return () => (id = (id === 50 ? 0 : id + 1))
 })()
 
-/**
- * Algorithm for cycling buttons:
- * - Determine state of the world, ignoring local button
- * - Determine ideal sequence for local button
- * - Determine current location in sequence
- * - Advance to next step in sequence
- */
+const localKey = subKey => boardName => `skillboard::${boardName}::${subKey}`
+const playersKey = localKey("players")
+
+const localSavePlayers = debounce(
+	(boardName, players) => localStorage.setItem(
+		playersKey(boardName),
+		JSON.stringify(players.toJS())
+	), 500
+)
+
+const localLoadPlayers = boardName => (
+	Seq(JSON.parse(localStorage.getItem(playersKey(boardName)) || '[]'))
+	.map(player => new Player(player))
+	.toList()
+)
 
 export default class Leaderboard extends React.PureComponent {
 	static propTypes = {
 		boardName: PropTypes.string.isRequired,
+		alert: PropTypes.func.isRequired,
 	}
 
 	constructor(props) {
@@ -131,18 +144,41 @@ export default class Leaderboard extends React.PureComponent {
 
 		this.state = {
 			newPlayer: false,
-			players: List([]),
+			players: localLoadPlayers(props.boardName),
 			tempPlayers: List([]),
+			maxPlayers: 2,
+			maxTeams: 2,
+			canTie: false,
+			playerTeams: Map([]),
+			teamRanks: Map([]),
+			working: 0,  // The number of outstanding requests
 		}
 	}
 
-	refreshPlayers = () => getPlayers({
+	webRequest = promise => {
+		this.setState(({working}) => ({working: working + 1}))
+		return promise
+			.catch(error => console.error("UNHANDLED:", error))
+			.then(() => this.setState(({working}) => ({working: working - 1})))
+	}
+
+	updatePlayers = updater => this.setState((prevState, props) => {
+		const newPlayers = updater(prevState.players)
+		localSavePlayers(props.boardName, newPlayers)
+		return { players: newPlayers }
+	})
+
+	setPlayers = newPlayers => this.updatePlayers(() => newPlayers)
+
+	refreshPlayers = () => this.webRequest(getBoardAndPlayers({
 		boardName: this.props.boardName
-	}).then(result => {
-		this.setState({players: List(result.data.board.players.map(processPlayer))})
-	}).catch(error =>
+	}).then(({data: {board: {maxPlayers, maxTeams, players, canTie}}}) => {
+		this.setState({maxTeams, maxPlayers, canTie})
+		this.setPlayers(Seq(players).map(processPlayer).toList())
+	}).catch(error => {
 		console.error("Error refreshing players", error)
-	)
+		this.props.alert("Error refreshing players (see console)")
+	}))
 
 	createPlayer = playerName => {
 		const tempId = `temp-${idMaker()}`
@@ -155,20 +191,21 @@ export default class Leaderboard extends React.PureComponent {
 			}))
 		}))
 
-		return createPlayer({
+		return this.webRequest(createPlayer({
 			boardName: this.props.boardName,
 			name: playerName
-		}).then(result =>
-			this.setState(prevState => ({
-				players: prevState.players.push(processPlayer(result.data.newPlayer))
-			}))
-		).catch(error =>
+		}).then(result => {
+			this.updatePlayers(prevPlayers =>
+				prevPlayers.push(processPlayer(result.data.newPlayer))
+			)
+		}).catch(error => {
 			console.error("Error creating player", error)
-		).then(() =>
+			this.props.alert("Error creating player (see console)")
+		}).then(() => {
 			this.setState(prevState => ({
 				tempPlayers: prevState.tempPlayers.filter(player => player.id !== tempId)
 			}))
-		)
+		}))
 	}
 
 	componentDidMount() {
@@ -198,7 +235,8 @@ export default class Leaderboard extends React.PureComponent {
 		return <div className="container">
 			<div className="row">
 				<div className="col">
-					<table className="table table-hover table-sm">
+					{this.state.working ? "WORKING" : null}
+					<table className="table table-hover table-sm" id="leaderboard-table">
 						<thead>
 							<tr>
 								<th scope="col">Rank</th>
@@ -209,11 +247,25 @@ export default class Leaderboard extends React.PureComponent {
 						</thead>
 						<tbody>
 							{rankedPlayers.map(({id, name, rank, displaySkill: skill}) =>
-								<TableRow key={id} name={name} rank={rank} skill={skill}>
-									<button type="button" className="btn btn-block btn-sm btn-outline-secondary">
-										Play
-									</button>
-								</TableRow>
+								<tr key={id}>
+									<td>{rank}</td>
+									<td>
+										<Link to={`/leaderboard/${this.props.boardName}/profile/${id}`}>
+											{name}
+										</Link>
+									</td>
+									<td>{skill}</td>
+									<td>
+										<div className="btn-group-vertical btn-block">
+											<button type="button" className="btn btn-block btn-sm btn-outline-secondary">
+												Team
+											</button>
+											<button type="button" className="btn btn-block btn-sm btn-outline-secondary">
+												Play
+											</button>
+										</div>
+									</td>
+								</tr>
 							)}
 							{this.state.tempPlayers.map(({id, name}) =>
 								<TableRow key={id} name={name} button="Creating..."/>
