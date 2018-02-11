@@ -1,5 +1,4 @@
 const path = require('path')
-const LodashModuleReplacementPlugin = require('lodash-webpack-plugin')
 
 const dir = local => path.resolve(__dirname, local)
 const isProd = process.env.NODE_ENV === 'production'
@@ -22,9 +21,6 @@ module.exports = {
 			"node_modules",
 		],
 	},
-	plugins: [
-		//new LodashModuleReplacementPlugin(),
-	],
 	module: {
 		rules: [{
 			// Babelify everything
@@ -40,7 +36,6 @@ module.exports = {
 					plugins: [
 						'lodash',
 						"transform-class-properties",
-						"transform-object-rest-spread",
 						"transform-strict-mode",
 					],
 				},

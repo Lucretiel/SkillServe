@@ -1,9 +1,5 @@
 import {
-	clone,
-	forEach,
-	isEmpty,
 	isFunction,
-	isPlainObject,
 	map,
 	mapValues,
 	memoize,
@@ -26,7 +22,9 @@ const graphqlCall = options => {
 			const mergeVariables = objApply(mergeQuery(minifyQuery(query)))
 
 			return variables => {
-				const {url, ...fetchOptions} = mergeVariables(variables)
+				const fetchOptions = mergeVariables(variables)
+				const url = fetchOptions.url
+
 				return fetch(url, fetchOptions)
 					.then(result => result.json())
 					.then(result => result.errors && result.errors.length ?
@@ -39,8 +37,9 @@ const graphqlCall = options => {
 }
 
 const formatQuery = object =>
-	map(object, (value, key) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
-	.join('&')
+	map(object, (value, key) =>
+		`${encodeURIComponent(key)}=${encodeURIComponent(value)}`
+	).join('&')
 
 
 export const query = graphqlCall({

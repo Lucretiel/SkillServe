@@ -1,52 +1,47 @@
 import {
-	Repeat, Map
+	Range, Map, Seq
 } from 'immutable'
 
-import {
-	memoize
-} from 'lodash'
-
-const setOrDelete = (key, value) => value == undefined ?
-	collection => collection.delete(key) :
-	collection => collection.set(key, value)
+import memoize from 'lodash/memoize'
 
 const onlyif = (condition, update) => condition ? update : c => c
 
+const nullSeq = Seq([null])
+
 // players is a mapping of player => team
-const baseTeamSelectController = ({maxTeams, maxPlayers}) => {
-	const emptyTeams = Repeat(0, maxTeams).toOrderedMap()
+const baseTeamSelectController = ({maxTeams, maxPlayers, minPlayers=1, baseTeam=1}) => {
+	const emptyTeams = Map(
+		Range(baseTeam, maxTeams + baseTeam).map(teamId => [teamId, 0])
+	)
 
 	return (players, playerToCycle) => {
 		const currentTeam = players.get(playerToCycle, null)
 
-		return players.update(setOrDelete(playerToCycle,
-			// Count players on each team
-			emptyTeams.merge(players
-				// Remove the current player; we want to know the ideal sequence if
-				// they're not present
-				.delete(playerToCycle)
-				.countBy(team => team))
-			// Sort by player count
-			.sortBy(teamSize => teamSize)
-			.update(teamSizes => teamSizes
-				// Get just the team IDS, sorted by their ideal ordering
-				.keySeq()
-				// If we have a team, skip up to the team, then past it
-				.update(onlyif(currentTeam !== null, teams => teams
-					.skipUntil(teamId => teamId === currentTeam)
-					.skip(1)))
-				// Skip full teams
-				.skipWhile(teamId => teamSizes.get(teamId) >= maxPlayers)
-				// Get the team! Or undefined
-				.first()
-			)
-		))
+		const teamSizes = emptyTeams.merge(
+			players.delete(playerToCycle).countBy(team => team)
+		)
+
+		return teamSizes
+			.toKeyedSeq()
+			.sortBy((v, teamId) => teamId)
+			.sortBy(teamSize => teamSize < minPlayers ? -1 : teamSize)
+			.keySeq()
+			// At this point we have an ordered sequence of Team IDs.
+
+			.update(onlyif(current !== null, teamIds => teamIds
+				.skipUntil(teamId => teamId === currentTeam)
+				.skip(1)
+			))
+			.skipWhile(teamId => teamSizes.get(teamId) >= maxPlayers)
+			.concat(nullSeq)
+			.first()
 	}
 }
 
 const teamSelectController = memoize(
 	baseTeamSelectController,
-	({maxTeams, maxPlayers}) => `${maxTeams}_${maxPlayers}`
+	({maxTeams, maxPlayers, minPlayers=1, baseTeam=1}) =>
+		`${maxTeams}_${maxPlayers}_${minPlayers}_${baseTeam}`
 )
 
 export default teamSelectController
