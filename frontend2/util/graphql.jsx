@@ -1,11 +1,9 @@
-import {
-	isFunction,
-	map,
-	mapValues,
-	memoize,
-	merge,
-	some,
-} from 'lodash'
+import isFunction from "lodash/isFunction"
+import map from "lodash/map"
+import mapValues from "lodash/mapValues"
+import memoize from "lodash/memoize"
+import merge from "lodash/merge"
+import some from "lodash/some"
 
 const objApply = object => input => mapValues(object, child => isFunction(child) ? child(input) : child)
 
@@ -38,7 +36,7 @@ const graphqlCall = options => {
 
 const formatQuery = object =>
 	map(object, (value, key) =>
-		`${encodeURIComponent(key)}=${encodeURIComponent(value)}`
+		[key, value].map(encodeURIComponent).join('=')
 	).join('&')
 
 

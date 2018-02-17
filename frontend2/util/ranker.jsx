@@ -6,7 +6,9 @@
  * [0,   1,   1,   3,   3,   3,   6]
  */
 
-const rankMapper = (scoreOf = thing=>thing, firstRank=1) => mapFunc => things => {
+import identity from 'lodash/identity'
+
+const rankMapper = (scoreOf = identity, firstRank=1) => mapFunc => things => {
 	let tieRank = firstRank
 	let prevScore = Symbol()
 

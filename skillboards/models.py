@@ -19,7 +19,13 @@ class Board(models.Model):
 	sigma = models.FloatField(default=trueskill.SIGMA)
 	beta = models.FloatField(default=trueskill.BETA)
 	tau = models.FloatField(default=trueskill.TAU)
-	draw_probability = models.FloatField(default=trueskill.DRAW_PROBABILITY)
+	draw_probability = models.FloatField(
+		default=trueskill.DRAW_PROBABILITY,
+		validators=[
+			MinValueValidator(0),
+			MaxValueValidator(1),
+		],
+	)
 
 	max_teams = models.PositiveIntegerField(
 		validators=[MinValueValidator(2)],
@@ -30,6 +36,20 @@ class Board(models.Model):
 		validators=[MinValueValidator(1)],
 		default=2
 	)
+
+	min_players = models.PositiveIntegerField(
+		validators=[MinValueValidator(1)],
+		default=1
+	)
+
+	def clean(self):
+		if self.min_players > self.max_players:
+			raise ValidationError("min_players must be <= max_players")
+
+		if self.max_players > 1 and self.can_tie:
+			raise ValidationError(
+				"We don't currently support games that have both team-play and "
+				"the possibility of ties")
 
 	def __str__(self):
 		return self.name
@@ -56,6 +76,10 @@ class Board(models.Model):
 	def delete(self, *args, **kwargs):
 		self.games.all().delete()
 		super().delete(*args, **kwargs)
+
+	@property
+	def can_tie(self):
+		return self.draw_probability > 0
 
 
 class BoardLock(models.Model):

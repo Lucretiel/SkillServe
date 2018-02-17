@@ -1,18 +1,38 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import IPropTypes from 'react-immutable-proptypes'
 import { Link } from 'react-router-dom'
+
+import { connect } from 'react-redux'
 
 import { Record, List, Map, Seq } from 'immutable'
 import { isArray, isNil, debounce } from 'lodash'
 
+import {
+	// Actions
+	setBoardInfo,
+	addPlayer,
+	setPlayers,
+	clearBoard,
+	rotatePlayer,
+	clearGame,
+
+	// Selectors
+	getPlayers,
+} from 'store/board.jsx'
+
+import { addAlert } from 'store/alerts.jsx'
+
 import { withUrl } from 'util/graphql.jsx'
 import teamSelectController from 'util/teamSelectController.jsx'
+import { mapStateToProps } from 'util/connectHelpers.jsx'
 
 const { query: graphQuery, mutate: graphMutate } = withUrl('/graphql')
 
 const getBoardAndPlayers = graphQuery(`
 	query($boardName:String!) {
 		board(name:$boardName) {
+			minPlayers
 			maxPlayers
 			maxTeams
 			canTie
@@ -30,54 +50,6 @@ const createPlayer = graphMutate(`
 	}
 `)
 
-const Player = Record({
-	id: null, name: null, skill: null, displaySkill: null, rank: null
-})
-
-const processPlayer = rawPlayer => new Player({
-	id: rawPlayer.id,
-	name: rawPlayer.name,
-	skill: rawPlayer.rating.skill,
-	displaySkill: rawPlayer.rating.skill.toFixed(0)
-})
-
-
-class TableRow extends React.PureComponent {
-	static propTypes = {
-		rank: PropTypes.number,
-		name: PropTypes.node,
-		skill: PropTypes.string,
-		button: PropTypes.node,
-		children: PropTypes.node,
-	}
-
-	render() {
-		let { rank="*", name=null, skill=null, button=null, children } = this.props
-
-		children =
-			isNil(children) ? [] :
-			isArray(children) ? children :
-			[children]
-
-		let index = 0
-		const trySet = value => isNil(value) && index < children.length ? children[index++] : value
-		name = trySet(name)
-		button = trySet(button)
-		const noSkill = isNil(skill)
-		const long = isNil(name) || isNil(button)
-
-		return long ?
-			<tr><td key="row" className="align-middle" colSpan="4">{name}</td></tr>:
-			<tr>
-				<td key="rank" className="align-middle">{rank}</td>
-				<td key="name" className="align-middle" colSpan={noSkill ? 2 : null}>{name}</td>
-				{noSkill ? null : <td key="skill" className="align-middle">{skill}</td>}
-				<td key="button" className="align-middle">{button}</td>
-			</tr>
-	}
-}
-
-
 class CreatePlayerRow extends React.PureComponent {
 	static propTypes = {
 		cancel: PropTypes.func.isRequired,
@@ -91,52 +63,53 @@ class CreatePlayerRow extends React.PureComponent {
 
 	render() {
 		const empty = this.state.name === ""
-		return <TableRow>
-			<input
-				type="text"
-				placeholder="Name"
-				className="form-control form-control-sm"
-				onChange={event => this.setState({name: event.target.value})}
-				onBlur={() => empty ? this.props.cancel() : undefined}
-				ref={input => input ? input.focus() : undefined}
-			/>
-			<button
-				type="button"
-				className="btn btn-primary btn-sm btn-block"
-				onClick={() => empty ? undefined : this.props.submit(this.state.name)}
-				disabled={empty}
-			>
-				Create
-			</button>
-		</TableRow>
+		return <tr>
+			<td></td>
+			<td colSpan={2}>
+				<input
+					type="text"
+					placeholder="Name"
+					className="form-control form-control-sm"
+					onChange={event => this.setState({name: event.target.value})}
+					onBlur={() => empty ? this.props.cancel() : undefined}
+					ref={input => input ? input.focus() : undefined}
+				/>
+			</td>
+			<td>
+				<button
+					type="button"
+					className="btn btn-primary btn-sm btn-block"
+					onClick={() => empty ? undefined : this.props.submit(this.state.name)}
+					disabled={empty}
+				>
+					Create
+				</button>
+			</td>
+		</tr>
 	}
 }
 
-const idMaker = (() => {
-	let id = 0
-	return () => (id = (id === 50 ? 0 : id + 1))
-})()
-
-const localKey = subKey => boardName => `skillboard::${boardName}::${subKey}`
-const playersKey = localKey("players")
-
-const localSavePlayers = debounce(
-	(boardName, players) => localStorage.setItem(
-		playersKey(boardName),
-		JSON.stringify(players.toJS())
-	), 500
+const connectStore = connect(
+	mapStateToProps({players: getPlayers}),
+	{ setBoardInfo, addPlayer, setPlayers, clearBoard, rotatePlayer, clearGame, addAlert }
 )
 
-const localLoadPlayers = boardName => (
-	Seq(JSON.parse(localStorage.getItem(playersKey(boardName)) || '[]'))
-	.map(player => new Player(player))
-	.toList()
-)
-
-export default class Leaderboard extends React.PureComponent {
+class Leaderboard extends React.PureComponent {
 	static propTypes = {
 		boardName: PropTypes.string.isRequired,
-		alert: PropTypes.func.isRequired,
+
+		// From redux
+		players: IPropTypes.list.isRequired
+
+		// Actions
+		setBoardInfo: PropTypes.func.isRequired,
+		addPlayer: PropTypes.func.isRequired,
+		setPlayers: PropTypes.func.isRequired,
+		clearBoard: PropTypes.func.isRequired,
+		rotatePlayer: PropTypes.func.isRequired,
+		clearGame: PropTypes.func.isRequired,
+
+		addAlert: PropTypes.func.isRequired
 	}
 
 	constructor(props) {
@@ -144,13 +117,7 @@ export default class Leaderboard extends React.PureComponent {
 
 		this.state = {
 			newPlayer: false,
-			players: localLoadPlayers(props.boardName),
-			tempPlayers: List([]),
-			maxPlayers: 2,
-			maxTeams: 2,
-			canTie: false,
-			playerTeams: Map([]),
-			teamRanks: Map([]),
+			tempPlayers: List(),
 			working: 0,  // The number of outstanding requests
 		}
 	}
@@ -162,27 +129,22 @@ export default class Leaderboard extends React.PureComponent {
 			.then(() => this.setState(({working}) => ({working: working - 1})))
 	}
 
-	updatePlayers = updater => this.setState((prevState, props) => {
-		const newPlayers = updater(prevState.players)
-		localSavePlayers(props.boardName, newPlayers)
-		return { players: newPlayers }
-	})
-
-	setPlayers = newPlayers => this.updatePlayers(() => newPlayers)
-
 	refreshPlayers = () => this.webRequest(getBoardAndPlayers({
 		boardName: this.props.boardName
-	}).then(({data: {board: {maxPlayers, maxTeams, players, canTie}}}) => {
-		this.setState({maxTeams, maxPlayers, canTie})
-		this.setPlayers(Seq(players).map(processPlayer).toList())
+	}).then(({data: {board: {maxPlayers, maxTeams, players, minPlayers, canTie}}}) => {
+		this.props.setBoardInfo({minPlayers, maxPlayers, maxTeams, canTie})
+		this.props.setPlayers(Seq(players).map(player => ({
+			id: player.id, name: player.name, skill: player.rating.skill
+		})))
 	}).catch(error => {
+		this.props.addAlert("Error refreshing players (see console)")
 		console.error("Error refreshing players", error)
-		this.props.alert("Error refreshing players (see console)")
 	}))
 
 	createPlayer = playerName => {
-		const tempId = `temp-${idMaker()}`
+		const tempId = "TEMP_ID"
 
+		// TODO: THIS IS WHERE YOU LEFT OFF THE PORT TO REDUX. RESUME HERE.
 		this.setState(prevState => ({
 			newPlayer: false,
 			tempPlayers: prevState.tempPlayers.push(new Player({
@@ -268,23 +230,27 @@ export default class Leaderboard extends React.PureComponent {
 								</tr>
 							)}
 							{this.state.tempPlayers.map(({id, name}) =>
-								<TableRow key={id} name={name} button="Creating..."/>
+								<tr key={id}>
+									<td></td>
+									<td>{name}</td>
+									<td colSpan="2">Creating...</td>
+								</tr>
 							)}
-							{this.state.newPlayer ? null :
-								<TableRow key="playerEntry">
-									<button
-										className="btn btn-outline-secondary btn-sm btn-block"
-										onClick={() => this.setState({newPlayer: true})}
-									>
-										New Player...
-									</button>
-								</TableRow>
-							}
 							{this.state.newPlayer ?
 								<CreatePlayerRow
 									cancel={() => this.setState({newPlayer: false})}
 									submit={this.createPlayer}
-								/> : null
+								/> :
+								<tr key="newPlayerButton">
+									<td colSpan="4">
+										<button
+											className="btn btn-outline-secondary btn-sm btn-block"
+											onClick={() => this.setState({newPlayer: true})}
+										>
+											New Player...
+										</button>
+									</td>
+								</tr>
 							}
 						</tbody>
 					</table>
@@ -293,3 +259,5 @@ export default class Leaderboard extends React.PureComponent {
 		</div>
 	}
 }
+
+export default connectStore(Leaderboard)
