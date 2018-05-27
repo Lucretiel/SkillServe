@@ -5,7 +5,8 @@ import classNames from 'classnames'
 import {doLogin, selectAuthStatus, selectUnauthError} from 'store/register.jsx'
 import {form} from 'store/form.jsx'
 import {apiFetch} from 'store/util.jsx'
-import {sortBy} from 'lodash/sortBy'
+import sortBy from 'lodash/sortBy'
+import map from 'lodash/map'
 
 class FormGroup extends React.PureComponent {
 	static propTypes = {
@@ -90,11 +91,11 @@ class SignInForm extends React.PureComponent {
 			return response.json()
 		})
 		.then(data => {
+			const processed = map(data, ({username, print_name}) => ({username, print_name}))
+			const sorted = sortBy(processed, ({print_name}) => print_name)
 			this.setState({
-				players: sortBy(data, player => player.print_name).map(player => ({
-					username: player.username,
-					print_name: player.print_name,
-				}))})
+				players: sorted,
+			})
 		})
 	}
 
@@ -136,7 +137,7 @@ class SignInForm extends React.PureComponent {
 					</tr>
 				</thead>
 				<tbody>
-					{this.state.players.map(player => <tr>
+					{this.state.players.map(player => <tr key={player.username}>
 						<td>{player.print_name}</td>
 						<td>{player.username}</td>
 					</tr>)}

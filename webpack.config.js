@@ -1,6 +1,5 @@
 const webpack = require('webpack')
 const path = require('path')
-const LodashModuleReplacementPlugin = require('lodash-webpack-plugin');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
 
 const dir = local => path.resolve(__dirname, local)
@@ -25,10 +24,6 @@ module.exports = {
 	},
 	plugins: [
 		/*new BundleAnalyzerPlugin(),*/
-		new LodashModuleReplacementPlugin({
-			shorthands: true,
-			collections: true,
-		}),
 	],
 	module: {
 		rules: [
@@ -47,7 +42,6 @@ module.exports = {
 							}],
 						],
 						plugins: [
-							'lodash',
 							"transform-decorators-legacy",
 							"transform-class-properties",
 							"transform-object-rest-spread",
