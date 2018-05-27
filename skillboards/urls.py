@@ -4,6 +4,7 @@ from django.conf.urls import url
 from skillboards import views
 
 urlpatterns = [
+    url(r'^boards$', views.board_list),
     url(r'^boards/(?P<board_name>[a-zA-Z0-9_-]+)/', include([
         url(r'^$', views.board_detail),
         url(r'^players/', include([

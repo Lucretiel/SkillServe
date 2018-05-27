@@ -21,6 +21,13 @@ def poke(request):
 
 
 @api_view()
+def board_list(request):
+    boards = Board.objects.all()
+    serializer = BoardSerializer(boards, many=True)
+    return Response(serializer.data)
+
+
+@api_view()
 def board_detail(request, board_name):
     board = get_object_or_404(Board, name=board_name)
     serializer = BoardSerializer(board)
