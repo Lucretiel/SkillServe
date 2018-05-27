@@ -138,3 +138,9 @@ jspm_packages
 
 # webpack
 frontend-dist
+
+##########
+# SYSTEM
+##########
+
+.DS_Store

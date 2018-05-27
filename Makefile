@@ -31,8 +31,8 @@ $(BUNDLEBR): $(BUNDLEJS)
 $(BUNDLEGZ): $(BUNDLEJS)
 	$(ZOPFLI) $(BUNDLEJS) -c > $(BUNDLEGZ)
 
-node_modules: package.json yarn.lock
-	yarn install
+node_modules: package.json
+	npm install
 	touch -ma node_modules
 
 clean-all: clean mod-clean

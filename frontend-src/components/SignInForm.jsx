@@ -4,6 +4,7 @@ import {connect} from 'react-redux'
 import classNames from 'classnames'
 import {doLogin, selectAuthStatus, selectUnauthError} from 'store/register.jsx'
 import {form} from 'store/form.jsx'
+import {apiFetch} from 'store/util.jsx'
 
 class FormGroup extends React.PureComponent {
 	static propTypes = {
@@ -65,10 +66,34 @@ class SignInForm extends React.PureComponent {
 		updateLeaderboard: PropTypes.func.isRequired,
 	}
 
+	constructor(props) {
+		super(props)
+
+		this.state = {
+			players: []
+		}
+	}
+
 	submit = event => {
 		const {leaderboard, username, prettyName} = this.props
 		this.props.submit({leaderboard, username, prettyName})
 		event.preventDefault()
+	}
+
+	componentDidMount() {
+		apiFetch({path: 'boards/BWC/players/'})
+		.then(response => {
+			if(!response.ok) {
+				throw new Error("Couldn't get user list")
+			}
+			return response.json()
+		})
+		.then(data => {
+			this.setState({players: data.map(player => ({
+				username: player.username,
+				print_name: player.print_name,
+			}))})
+		})
 	}
 
 	render() {
@@ -82,9 +107,9 @@ class SignInForm extends React.PureComponent {
 			{disabled: submitting}
 		)
 
-		return (
+		return <div>
 			<form>
-				<FormGroup inputId="leaderboard-input" placeholder="Ask Nathan"
+				<FormGroup inputId="leaderboard-input" placeholder="Type in BWC"
 				           header="Leaderboard" value={leaderboard}
 				           onChange={updateLeaderboard}
 				/>
@@ -101,7 +126,21 @@ class SignInForm extends React.PureComponent {
 					{submitting ? "Signing in..." : "Sign In"}
 				</button>
 			</form>
-		)
+			<table className="table table-striped table-sm table-hover" id="user-table">
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Username</th>
+					</tr>
+				</thead>
+				<tbody>
+					{this.state.players.map(player => <tr>
+						<td>{player.print_name}</td>
+						<td>{player.username}</td>
+					</tr>)}
+				</tbody>
+			</table>
+		</div>
 	}
 }
 
