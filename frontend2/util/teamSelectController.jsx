@@ -10,7 +10,7 @@ const onlyif = (condition, update) => condition ? update : c => c
 const nullSeq = Seq([null])
 
 // players is a mapping of player => team
-const makeTeamSelectController = memoize(
+const teamSelectController = memoize(
 	({maxTeams, maxPlayers, minPlayers, canTie}) => `${maxTeams}_${maxPlayers}_${minPlayers}_${canTie}`,
 	({maxTeams, maxPlayers, minPlayers, canTie}) => {
 		if(canTie && maxPlayers > 1) {
@@ -21,13 +21,14 @@ const makeTeamSelectController = memoize(
 
 		return (players, playerToCycle) => {
 			const currentTeam = players.get(playerToCycle, null)
+			const teamsWithoutThisPlayer = players.delete(playerToCycle)
 
 			const teamSizes = emptyTeams.merge(
-				players.delete(playerToCycle).countBy(team => team)
+				teamsWithoutThisPlayer.countBy(team => team)
 			)
 
-			const maxTeam = players.max()
-			const maxAcceptableTeam = maxTeam === undefined ? baseTeam : maxTeam + 1
+			const maxTeam = teamsWithoutThisPlayer.max()
+			const maxAcceptableTeam = maxTeam === undefined ? 0 : maxTeam + 1
 
 			const newTeam = teamSizes
 				// First, put the teams in their ideal iteration cycle
@@ -62,4 +63,4 @@ const makeTeamSelectController = memoize(
 	}
 )
 
-export default makeTeamSelectController
+export default teamSelectController

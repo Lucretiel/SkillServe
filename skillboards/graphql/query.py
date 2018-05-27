@@ -18,16 +18,20 @@ def unroll(container=list):
 	return unroll_decorator
 
 
+class BoardInfo(graphene.ObjectType):
+	min_players = graphene.Int()
+	max_players = graphene.Int()
+	max_teams = graphene.Int()
+	can_tie = graphene.Boolean()
+
+
 class Board(graphene.ObjectType):
 	name = graphene.String()
 	players = graphene.List(lambda: Player)
 	games = graphene.List(lambda: Game)
 	player = graphene.Field(lambda: Player, id=graphene.Int())
 
-	min_players = graphene.Int()
-	max_players = graphene.Int()
-	max_teams = graphene.Int()
-	can_tie = graphene.Boolean()
+	info = graphene.Field(BoardInfo)
 
 	def resolve_players(root, info):
 		return root.players.all()
@@ -42,6 +46,9 @@ class Board(graphene.ObjectType):
 			.prefetch_related('gameteamplayer_set__team__game__teams__players__player')
 			.get(id=id)
 		)
+
+	def resolve_info(root, info):
+		return root
 
 
 class Rating(graphene.ObjectType):

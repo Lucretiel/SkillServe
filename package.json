@@ -7,9 +7,9 @@
 		"build": "env NODE_ENV=development webpack --progress",
 		"build-dev": "env NODE_ENV=development webpack -d --progress",
 		"build-prod": "env NODE_ENV=production webpack -p --progress",
-		"web-serve": "env NODE_ENV=development webpack-dev-server --progress",
-		"web-serve-dev": "env NODE_ENV=development webpack-dev-server --progress -d",
-		"web-serve-prod": "env NODE_ENV=production webpack-dev-server --progress -p",
+		"web-serve": "env NODE_ENV=development webpack --watch --progress",
+		"web-serve-dev": "env NODE_ENV=development webpack --watch --progress -d",
+		"web-serve-prod": "env NODE_ENV=production webpack --watch --progress -p",
 		"heroku-postbuild": "make -j all sizes"
 	},
 	"repository": {

@@ -1,6 +1,9 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import IPropTypes from 'react-immutable-proptypes'
+import { connect } from 'react-redux'
+
+import { removeAlert } from 'store/alerts.jsx'
 
 class Alert extends React.PureComponent {
 	static propTypes = {
@@ -18,16 +21,16 @@ class Alert extends React.PureComponent {
 	}
 }
 
-export default class Alerts extends React.PureComponent {
+class Alerts extends React.PureComponent {
 	static propTypes = {
-		alerts: IPropTypes.listOf(PropTypes.node.isRequired),
+		alerts: IPropTypes.orderedMapOf(PropTypes.node.isRequired),
 		dismiss: PropTypes.func.isRequired,
 	}
 
 	render() {
 		const { dismiss, alerts } = this.props
 		return <div className="container">
-			{alerts.toSeq().map((alert, alertId) =>
+			{alerts.entrySeq().map(([alertId, alert]) =>
 				<div className="row" key="alertId">
 					<div className="col">
 						<Alert dismiss={() => dismiss(alertId)}>
@@ -39,3 +42,8 @@ export default class Alerts extends React.PureComponent {
 		</div>
 	}
 }
+
+export default connect(
+	state => ({alerts: state.alerts}),
+	dispatch => ({dismiss: key => dispatch(removeAlert(key))})
+)(Alerts)
