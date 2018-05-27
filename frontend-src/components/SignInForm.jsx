@@ -5,6 +5,7 @@ import classNames from 'classnames'
 import {doLogin, selectAuthStatus, selectUnauthError} from 'store/register.jsx'
 import {form} from 'store/form.jsx'
 import {apiFetch} from 'store/util.jsx'
+import {sortBy} from 'lodash/sortBy'
 
 class FormGroup extends React.PureComponent {
 	static propTypes = {
@@ -89,10 +90,11 @@ class SignInForm extends React.PureComponent {
 			return response.json()
 		})
 		.then(data => {
-			this.setState({players: data.map(player => ({
-				username: player.username,
-				print_name: player.print_name,
-			}))})
+			this.setState({
+				players: sortBy(data, player => player.print_name).map(player => ({
+					username: player.username,
+					print_name: player.print_name,
+				}))})
 		})
 	}
 
