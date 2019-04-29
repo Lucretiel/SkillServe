@@ -116,7 +116,7 @@ class GameTests(BasicBoards):
 		self.board1.create_game(teams=game, timestamp=insert_time)
 
 		now_game.refresh_from_db()
-		self.assertEqual(now_game.dirty, True)
+		self.assertTrue(now_game.dirty)
 
 	def test_unrelated_game_not_dirtied(self):
 		'''
